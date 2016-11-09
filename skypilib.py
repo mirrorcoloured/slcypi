@@ -1,3 +1,7 @@
+# Simple library for Raspberry Pi use
+# Sky Chrastina
+# Python 3.4.2
+
 import RPi.GPIO as GPIO
 from twython import Twython
 import time
