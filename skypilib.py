@@ -93,8 +93,8 @@ class EventPin():
             print(self.pin,self.name,'get')
         return GPIO.input(self.pin)
 
-##def alert(channel):
-##    print('alert on channel',channel)
+def alert(channel):
+    print('alert on channel',channel)
 
 class PWMPin():
 # frequency determines
@@ -344,9 +344,6 @@ class SegmentDisplay():
         for pin in self.pins.values(): # setup pins for output
             GPIO.setup(pin, GPIO.OUT)
             GPIO.output(pin, GPIO.LOW) # initialize low = off
-        #self.segs = {'a':0b00000001,'b':0b00000010,'c':0b00000100,
-        #             'd':0b00001000,'e':0b00010000,'f':0b00100000,
-        #             'g':0b01000000,'dc':0b10000000}
         self.trans = {'0':0b00011111,'1':0b00000110,'2':0b01011011,
                       '3':0b01001111,'4':0b01100110,'5':0b01101101,
                       '6':0b01111101,'7':0b00000111,'8':0b01111111,
@@ -439,8 +436,6 @@ class MultiSegmentDisplay():
         for c in character:
             cw = cw | self.trans[c] # add up character bitstrings
         dw = 0
-        #for d in digit:
-        #    dw = dw | self.digits[d] # add up digit bitstrings
         dw = self.digits[digit]
         w = cw | dw # combine into single bitstring
         self.PATTERN(w)
@@ -702,104 +697,9 @@ class Adafruit_CharLCD:
             else:
                 self.write4bits(ord(char),True)
 
-# not working properly, problem inheriting class
-##class PWMPin(GPIO.PWM):
-##    def __init__(self,pin,name='',freq=1023,spd=1,rising=True,verbose=False):
-##        self.name = name
-##        self.pin = pin
-##        self.freq = freq
-##        self.dc = 0
-##        self.verbose = verbose
-##        GPIO.setmode(GPIO.BOARD)
-##        GPIO.setup(self.pin,GPIO.OUT)
-##        self = GPIO.PWM(self.pin,self.freq)
-##        self.start(0)
-##        if self.verbose:
-##            print(self.pin,self.name,'set to PWM output')
-##    def ON(self):
-##        if self.verbose:
-##            print(self.pin,self.name,'on')
-##        GPIO.output(self.pin,GPIO.HIGH)
-##    def OFF(self):
-##        if self.verbose:
-##            print(self.pin,self.name,'off')
-##        GPIO.output(self.pin,GPIO.LOW)
-##    def GET(self):
-##        if self.verbose:
-##            print(self.pin,self.name,'get')
-##        return GPIO.input(self.pin)
-##    def CYCLE(self):
-##        if self.verbose:
-##            print(self.pin,self.name,'incrementing duty cycle from',self.dc,'by',self.spd)
-##        if rising and self.dc + self.spd <= 100:
-##            self.dc += self.spd
-##            self.ChangeDutyCycle(self.dc)
-##        elif rising and self.dc + self.spd > 100:
-##            rising = False
-##
-##        elif not rising and self.dc - self.spd >= 0:
-##            self.dc -= self.spd
-##            self.ChangeDutyCycle(self.dc)
-##        elif not rising and self.dc - self.spd < 0:
-##            rising = True
-
-def OnPin(PinNum,verbose=False):
-    GPIO.output(PinNum, GPIO.HIGH)      # Set to high (+3.3 V)
-    if verbose:
-        print('Pin',PinNum,'set to 3.3 V')
-    # GPIO.HIGH = True = 1
-
-def OffPin(PinNum,verbose=False):
-    GPIO.output(PinNum, GPIO.LOW)       # Set to low (0 V)
-    if verbose:
-        print('Pin',PinNum,'set to 0 V')
-    # GPIO.Low = False = 0
-
-def GetPin(PinNum,verbose=False):
-    if verbose:
-        print('Getting pin',PinNum)
-    print(GPIO.input(PinNum))
-
-def SetupPin(PinNum,PinType,verbose=False):
-    GPIO.setmode(GPIO.BOARD)            # Identifies pin by physical location
-    #GPIO.setmode(GPIO.BCM)             # Identifies pin by Broadcom channel
-    if PinType == 'OUT':
-        GPIO.setup(PinNum, GPIO.OUT)    # Set pin mode to output
-        if verbose:
-            print('Initialized',PinNum,'for output')
-    elif PinType == 'IN':
-        GPIO.setup(PinNum, GPIO.IN)     # Set pin mode to input
-        if verbose:
-            print('Initialized',PinNum,'for input')
-    OnPin(PinNum,False)
-
 def Cleanup():
     GPIO.cleanup()
 
-def PinOut(PinNum,verbose=False):
-    if verbose:
-        print('Setting pin',PinNum,'to output')
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(PinNum,GPIO.OUT)
-
-def PinIn(PinNum,verbose=False):
-    if verbose:
-        print('Setting pin',PinNum,'to input (off)')
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(PinNum,GPIO.IN,GPIO.PUD_OFF)
-
-def PinInUp(PinNum,verbose=False):
-    if verbose:
-        print('Setting pin',PinNum,'to input (up)')
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(PinNum,GPIO.IN,GPIO.PUD_UP)
-
-def PinInDown(PinNum,verbose=False):
-    if verbose:
-        print('Setting pin',PinNum,'to input (down)')
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(PinNum,GPIO.IN,GPIO.PUD_DOWN)
-    
 ### TWITTER ###
 
 def Tweet(twit,statustext):
