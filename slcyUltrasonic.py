@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import time
+import datetime
 
 def Sleep(seconds):
     time.sleep(seconds)
@@ -25,6 +26,14 @@ class Dataset():
         return max(self.data)
     def __min__(self): #overload min() function
         return min(self.data)
+    def tostring(self): #add tostring() function
+        sl = []
+        for d in self.data:
+            sl.append(str(d))
+            sl.append('\n')
+        return ''.join(sl)
+    def print(self): #add print() function
+        print(self.tostring())
     def avg(self) -> float:
         """Returns the average of the data contained"""
         return sum(self.data)/len(self.data)
@@ -39,7 +48,7 @@ class Dataset():
             var += v
         var = var / len(va)
         return var ** (1/2)
-    def removeoutliers(self, c=1) -> Dataset:
+    def removeoutliers(self, c=1) -> 'Dataset':
         """Returns a new Dataset, excluding any data points +- c standard deviations
         [c] <int>
         """
@@ -64,6 +73,7 @@ class UltrasonicSensor():
 #   VCC TRIG ECHO GND
     def __init__(self, pins, name='', verbose=False):
         self.name = name
+        self.verbose = verbose
         if type(pins) is dict:
             self.pins = pins
         elif type(pins) is list:
@@ -73,12 +83,14 @@ class UltrasonicSensor():
             for i in range(0,len(c)):
                 p[c[i]] = pins[i]
             self.pins = p
-        if verbose:
-            print('Initializing Ultrasonic Sensor',name)
+        if self.verbose:
+            print('Initializing Ultrasonic Sensor',self.name,'...',end=' ')
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.pins['trig'], GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(self.pins['echo'], GPIO.IN)
         Sleep(2)
+        if self.verbose:
+            print('Done')
     def measure(self, digits=4) -> float:
         """---
         Returns a distance measurement
@@ -86,20 +98,20 @@ class UltrasonicSensor():
         ---
         [digits] <int>, how many digits to round to
         """
-        if verbose:
-            print(name,'taking a measurement')
+        if self.verbose:
+            print(self.name,'taking a measurement')
         GPIO.output(self.pins['trig'], GPIO.HIGH)
         Sleep(0.000015)
         GPIO.output(self.pins['trig'], GPIO.LOW)
         while not GPIO.input(self.pins['echo']):
             pass
         t1 = time.time()
-        while GPIO.input(18):
+        while GPIO.input(self.pins['echo']):
             pass
         t2 = time.time()
         r = round((t2-t1) * 340 / 2, digits)
-        if verbose:
-            print(name,'measured',r)
+        if self.verbose:
+            print(self.name,'measured',r)
         return r
     def multimeasure(self, interval=.1, totalmeasurements=None, totaltime=None, digits=4) -> Dataset:
         """Takes regular measurements, up to a max number or time, and returns a Dataset object
@@ -117,8 +129,12 @@ class UltrasonicSensor():
             tm = totalmeasurements
         else:
             tm = min(totaltime / interval, totalmeasurements)
+        if self.verbose:
+            print(self.name,'taking',tm,'measurements over',tm*interval,'seconds')
         o = Dataset([]) # initialize Dataset
         while len(o) < tm: # until I have enough data points
             o.append(self.measure(digits))
             Sleep(interval)
+        if self.verbose:
+            print(self.name,'completed multimeasure')
         return o
