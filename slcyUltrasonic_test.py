@@ -7,7 +7,7 @@ if __name__ == "__main__":
 
     test = SEN.measure() # takes a single measurement
 
-    dat = SEN.multimeasure(interval=0.1,totaltime=1) # takes a measurement every 0.1 s for 5 s
+    dat = SEN.multimeasure(interval=0.1,totaltime=5) # takes a measurement every 0.1 s for 5 s
 
     print('Average measurement:', dat.avg())
     print('Measurement standard deviation:', dat.sd())
