@@ -33,40 +33,102 @@ applepislcy = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
 
 ### GENERAL ###
 
-def Sleep(seconds):
+def Sleep(seconds) -> None:
+    """Puts the program to sleep"""
     time.sleep(seconds)
+
+def Alert(channel) -> None:
+    """Simple alert function for testing event interrupts"""
+    print('Alert on channel',channel)
 
 ### GPIO ###
 
-class InPin():
-    def __init__(self,pin,name='',ud='OFF',verbose=False):
+class OutPin():
+    """Sets up a pin for output
+    pin <int>
+    [name] <str>, identify this pin
+    [verbose] <bool>, print every action
+    """
+    def __init__(self,pin,name='',verbose=False):
         self.pin = pin
         self.name = name
         self.verbose = verbose
         GPIO.setmode(GPIO.BOARD)
-        if ud == OFF:
-            if self.verbose:
-                print(self.pin,self.name,'set to input (off)')
-            GPIO.setup(self.pin,GPIO.IN,GPIO.PUD_OFF)
-        elif ud == UP:
-            if self.verbose:
-                print(self.pin,self.name,'set to input (up)')
-            GPIO.setup(self.pin,GPIO.IN,GPIO.PUD_UP)
-        elif ud == DOWN:
-            if self.verbose:
-                print(self.pin,self.name,'set to input (down)')
-            GPIO.setup(self.pin,GPIO.IN,GPIO.PUD_DOWN)
-    def get(self):
         if self.verbose:
-            print(self.pin,self.name,'get')
+            print(self.name,self.pin,'set to output')
+        GPIO.setup(self.pin,GPIO.OUT)
+    def on(self) -> None:
+        """Turns the pin on (sets to 3.3 V)"""
+        if self.verbose:
+            print(self.name,self.pin,'on')
+        GPIO.output(self.pin,GPIO.HIGH)
+    def off(self) -> None:
+        """Turns the pin off (sets to 0 V)"""
+        if self.verbose:
+            print(self.name,self.pin,'off')
+        GPIO.output(self.pin,GPIO.LOW)
+    def toggle(self) -> None:
+        """Toggles the pin on/off"""
+        if self.verbose:
+            print(self.name,self.pin,'toggled')
+        GPIO.output(self.pin,~self.get)
+    def get(self) -> int:
+        """Returns the current status of the pin
+        0 = OFF, 0 V
+        1 = ON, 3.3 V
+        """
+        if self.verbose:
+            print(self.name,self.pin,'getting value')
+        return GPIO.input(self.pin)
+
+class InPin():
+    """Sets up a pin for input
+    pin <int>
+    [pud] <str> 'OFF', 'DOWN', or 'UP', sets an internal pull-up or pull-down resistor
+    [name] <str>, identify this pin
+    [verbose] <bool>, print every action
+    """
+    def __init__(self,pin,pud='OFF',name='',verbose=False):
+        self.pin = pin
+        self.name = name
+        self.verbose = verbose
+        GPIO.setmode(GPIO.BOARD)
+        if ud == 'OFF':
+            if self.verbose:
+                print(self.name,self.pin,'set to input (off)')
+            GPIO.setup(self.pin,GPIO.IN,GPIO.PUD_OFF)
+        elif ud == 'UP':
+            if self.verbose:
+                print(self.name,self.pin,'set to input (up)')
+            GPIO.setup(self.pin,GPIO.IN,GPIO.PUD_UP)
+        elif ud == 'DOWN':
+            if self.verbose:
+                print(self.name,self.pin,'set to input (down)')
+            GPIO.setup(self.pin,GPIO.IN,GPIO.PUD_DOWN)
+    def get(self) -> int:
+        """Returns the current status of the pin
+        0 = OFF, 0 V
+        1 = ON, 3.3 V
+        """
+        if self.verbose:
+            print(self.name,self.pin,'getting value')
         return GPIO.input(self.pin)
 
 class EventPin():
-    def __init__(self,pin,function,rising=True,bouncetime=250,pud=GPIO.PUD_UP,name='',verbose=False):
+    """Sets up a pin for input with a triggering function
+    pin <int>
+    function <func>
+    [risefall] <str> 'RISING' or 'FALLING', detects signal edges up or down
+    [pud] <str> 'OFF', 'DOWN', or 'UP', sets an internal pull-up or pull-down resistor
+    [bouncetime] <int>, ms to ignore repeated triggers
+    [name] <str>, identify this pin
+    [verbose] <bool>, print every action
+    """
+    def __init__(self,pin,function,risefall='RISING',pud=GPIO.PUD_UP,bouncetime=250,name='',verbose=False):
         self.pin = pin
         self.name = name
         self.function = function
-        self.rising = rising
+        self.risefall = risefall
         self.pud = pud
         self.bouncetime = bouncetime
         self.verbose = verbose
@@ -77,82 +139,82 @@ class EventPin():
             GPIO.setup(self.pin,GPIO.IN,GPIO.PUD_UP)
         elif self.pud == GPIO.PUD_DOWN: # GPIO <-> button <-> 3.3V
             GPIO.setup(self.pin,GPIO.IN,GPIO.PUD_DOWN)
-        if self.rising:
+        if self.risefall == 'RISING':
             if self.verbose:
-                print(self.pin,self.name,'set to input (off)')
+                print(self.name,self.pin,'set to input (off)')
             #GPIO.add_event_detect(self.pin,GPIO.FALLING,function,bouncetime=self.bouncetime) #opposite due to wiring
             GPIO.add_event_detect(self.pin,GPIO.FALLING,bouncetime=self.bouncetime)
-        else:
+        elif self.risefall == 'FALLING':
             if self.verbose:
-                print(self.pin,self.name,'set to input (up)')
+                print(self.name,self.pin,'set to input (up)')
             #GPIO.add_event_detect(self.pin,GPIO.RISING,function,bouncetime=self.bouncetime)
             GPIO.add_event_detect(self.pin,GPIO.RISING,bouncetime=self.bouncetime)
+        else:
+            print('ERROR:',self.name,self.pin,'set to invalid risefall value')
         GPIO.add_event_callback(self.pin,function)
-    def get(self):
+    def setfunction(self,function) -> None:
+        """Not implemented
+        Need to figure out how to remove event detect triggers
+        """
+        pass
+    def get(self) -> int:
+        """Returns the current status of the pin
+        0 = OFF, 0 V
+        1 = ON, 3.3 V
+        """
         if self.verbose:
-            print(self.pin,self.name,'get')
+            print(self.pin,self.name,'getting value')
         return GPIO.input(self.pin)
 
-def alert(channel):
-    print('alert on channel',channel)
-
 class PWMPin():
-# frequency determines
-    def __init__(self, pin, freq=1023, dutycycle=100, name='', verbose=False):
+    """Sets up a pin for pulse width modulated output
+    pin <int>
+    [freq] <int> frequency of cycle
+    [dutycycle] <int>, percentage of time active (0-100)
+    [on] <bool>, start on
+    [name] <str>, identify this pin
+    [verbose] <bool>, print every action
+    """
+    def __init__(self, pin, freq=1023, dutycycle=100, on=True, name='', verbose=False):
         self.pin = pin
         self.name = name
         self.freq = freq
         self.dutycycle = dutycycle
         self.verbose = verbose
+        if self.verbose:
+            print(self.name,self.pin,'set to PWM (',self.freq,'% ,',self.dutycycle,' Hz) ON:',on)
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.pin, GPIO.OUT)
         self.pwm = GPIO.PWM(self.pin, self.freq)
-        self.pwm.start(self.dutycycle)
-    def on(self):
+        if on:
+            self.pwm.start(self.dutycycle)
+    def on(self) -> None:
+        """Turns the PWM pin on"""
         if self.verbose:
-            print(self.pin,self.name,'on')
+            print(self.name,self.pin,'on')
         self.pwm.start(self.dutycycle)
-    def off(self):
+    def off(self) -> None:
+        """Turns the PWM pin off"""
         if self.verbose:
-            print(self.pin,self.name,'off')
+            print(self.name,self.pin,'off')
         self.pwm.stop()
-    def setfreq(self, freq):
+    def setfreq(self, freq) -> None:
+        """Sets the frequency of the PWM pin
+        freq <int>
+        """
         if self.verbose:
-            print(self.name,'setting frequency to',freq)
+            print(self.name,self.pin,'setting frequency to',freq)
         self.freq = freq
         self.pwm.ChangeFrequency(self.freq)
-    def setdutycycle(self, dutycycle):
+    def setdutycycle(self, dutycycle) -> None:
+        """Sets the duty cycle of the PWM pin
+        dutycycle <int>, (1-100)
+        """
         if self.verbose:
-            print(self.name,'setting frequency to',dutycycle)
+            print(self.name,self.pin,'setting duty cycle to',dutycycle)
         self.dutycycle = dutycycle
         self.pwm.ChangeDutyCycle(self.dutycycle)
         
-class OutPin():
-    def __init__(self,pin,name='',verbose=False):
-        self.pin = pin
-        self.name = name
-        self.verbose = verbose
-        GPIO.setmode(GPIO.BOARD)
-        if self.verbose:
-            print(self.pin,self.name,'set to output')
-        GPIO.setup(self.pin,GPIO.OUT)
-    def on(self):
-        if self.verbose:
-            print(self.pin,self.name,'on')
-        GPIO.output(self.pin,GPIO.HIGH)
-    def off(self):
-        if self.verbose:
-            print(self.pin,self.name,'off')
-        GPIO.output(self.pin,GPIO.LOW)
-    def toggle(self):
-        if self.verbose:
-            print(self.pin,self.name,'toggled')
-        GPIO.output(self.pin,~self.get)
-    def get(self):
-        if self.verbose:
-            print(self.pin,self.name,'get')
-        return GPIO.input(self.pin)
-
 class Dataset():
     """---
     List container with some basic number analysis
@@ -161,79 +223,26 @@ class Dataset():
     """
     def __init__(self, data):
         self.data = data
-    def add(self,data): #create .add() function
+    def add(self,data) -> None: #create .add() function
         for d in data:
             self.data.append(d)
-    def append(self,data): #extend .append() function
+    def append(self,data) -> None: #extend .append() function
         self.data.append(data)
-    def __add__(self,data): #overload + operator
+    def __add__(self,data) -> None: #overload + operator
         self.data.append(data)
-    def __len__(self): #overload len() function
+    def __len__(self) -> int: #overload len() function
         return len(self.data)
-    def __max__(self): #overload max() function
+    def __max__(self) -> float: #overload max() function
         return max(self.data)
-    def __min__(self): #overload min() function
+    def __min__(self) -> float: #overload min() function
         return min(self.data)
-    def tostring(self): #add tostring() function
+    def tostring(self) -> str: #add tostring() function
         sl = []
         for d in self.data:
             sl.append(str(d))
             sl.append('\n')
         return ''.join(sl)
-    def print(self): #add print() function
-        print(self.tostring())
-    def avg(self) -> float:
-        """Returns the average of the data contained"""
-        return sum(self.data)/len(self.data)
-    def sd(self) -> float:
-        """Returns 1 SD of the data contained"""
-        avg = self.avg()
-        va = []
-        for d in self.data:
-            va.append((d - avg) ** 2)
-        var = 0
-        for v in va:
-            var += v
-        var = var / len(va)
-        return var ** (1/2)
-    def removeoutliers(self, c=1) -> 'Dataset':
-        """Returns a new Dataset, excluding any data points +- c standard deviations
-        [c] <int>
-        """
-        avg = self.avg()
-        sd = self.sd()
-        new = []
-        for d in self.data:
-            if abs(d-avg) < sd:
-                new.append(d)
-        return Dataset(new)class Dataset():
-    """---
-    List container with some basic number analysis
-    ---
-    data <list>
-    """
-    def __init__(self, data):
-        self.data = data
-    def add(self,data): #create .add() function
-        for d in data:
-            self.data.append(d)
-    def append(self,data): #extend .append() function
-        self.data.append(data)
-    def __add__(self,data): #overload + operator
-        self.data.append(data)
-    def __len__(self): #overload len() function
-        return len(self.data)
-    def __max__(self): #overload max() function
-        return max(self.data)
-    def __min__(self): #overload min() function
-        return min(self.data)
-    def tostring(self): #add tostring() function
-        sl = []
-        for d in self.data:
-            sl.append(str(d))
-            sl.append('\n')
-        return ''.join(sl)
-    def print(self): #add print() function
+    def print(self) -> None: #add print() function
         print(self.tostring())
     def avg(self) -> float:
         """Returns the average of the data contained"""
@@ -262,79 +271,6 @@ class Dataset():
         return Dataset(new)
 
 class UltrasonicSensor():
-    """Initialize with list of GPIO pins according to:
-    [trig, echo]
-    pins <list> or <dict>
-    [name] <str>, identify this sensor
-    [verbose] <bool>, print every action
-    """
-# |-------------------|
-# |    (O)     (O)    |
-# |---|---|---|---|---|
-#   VCC TRIG ECHO GND
-    def __init__(self, pins, name='', verbose=False):
-        self.name = name
-        self.verbose = verbose
-        if type(pins) is dict:
-            self.pins = pins
-        elif type(pins) is list:
-            p = {}
-            c = ['trig','echo']
-            i = 0
-            for i in range(0,len(c)):
-                p[c[i]] = pins[i]
-            self.pins = p
-        if self.verbose:
-            print('Initializing Ultrasonic Sensor',self.name,'...',end=' ')
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(self.pins['trig'], GPIO.OUT, initial=GPIO.LOW)
-        GPIO.setup(self.pins['echo'], GPIO.IN)
-        Sleep(2)
-        if self.verbose:
-            print('Done')
-    def measure(self, digits=4) -> float:
-        """---
-        Returns a distance measurement
-        Takes < 0.02 s to resolve
-        ---
-        [digits] <int>, how many digits to round to
-        """
-        if self.verbose:
-            print(self.name,'taking a measurement')
-        GPIO.output(self.pins['trig'], GPIO.HIGH)
-        Sleep(0.000015)
-        GPIO.output(self.pins['trig'], GPIO.LOW)
-        while not GPIO.input(self.pins['echo']):
-            pass
-        t1 = time.time()
-        while GPIO.input(self.pins['echo']):
-            pass
-        t2 = time.time()
-        r = round((t2-t1) * 340 / 2, digits)
-        if self.verbose:
-            print(self.name,'measured',r)
-        return r
-    def multimeasure(self, interval=.1, totalmeasurements=None, totaltime=None, digits=4) -> Dataset:
-        """Takes regular measurements, up to a max number or time, and returns a Dataset object
-        interval <float>, time between each measurement
-        totalmeasurements <int>, max number of measurements
-        totaltime <float>, max time of series of measurements
-        [digits] <int>, how many digits to round to
-        """
-        if totalmeasurements == None and totaltime == None:
-            print('Error, no max measurements or time provided.')
-            return None    
-        elif totaltime != None and totalmeasurements == None:
-            tm = totaltime / interval
-        elif totaltime == None and totalmeasurements != None:
-            tm = totalmeasurements
-        else:
-            tm = min(totaltime / interval, totalmeasurements)
-        o = Dataset([]) # initialize Dataset
-        while len(o) < tm: # until I have enough data points
-            o.append(self.measure(digits))
-            Sleep(interval)
-        return oclass UltrasonicSensor():
     """Initialize with list of GPIO pins according to:
     [trig, echo]
     pins <list> or <dict>
@@ -412,7 +348,7 @@ class UltrasonicSensor():
         if self.verbose:
             print(self.name,'completed multimeasure')
         return o
-
+    
 class DCMotor():
 #   OA |-\/-| GND
 #  VCC |    | IB
@@ -887,15 +823,32 @@ def Cleanup():
 
 ### TWITTER ###
 
-def Tweet(twit,statustext):
-    twit.update_status(status=statustext)
+def Tweet(twit,statustext) -> None:
+    """Tweets a message
+    twit <Twython>, create with Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+    statustext <str>, must be <= 140 characters
+    """
+    if len(statustext) > 140:
+        print('ERROR: Character limit 140 exceeded:',len(statustext))
+    else:
+        twit.update_status(status=statustext)
 
-def TweetPicture(twit,file,statustext):
+def TweetPicture(twit,file,statustext) -> None:
+    """Tweets a message with a picture
+    twit <Twython>, create with Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+    file <str>, path and filename to picture
+    statustext <str>, must be <= 140 characters
+    """
     photo = open(file, 'rb')
     response = twitter.upload_media(media=photo)
     twit.update_status(status=statustext, media_ids=[response['media_id']])
 
-def TweetVideo(twit,file,statustext):
+def TweetVideo(twit,file,statustext) -> None:
+    """Tweets a message with a video
+    twit <Twython>, create with Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+    file <str>, path and filename to video
+    statustext <str>, must be <= 140 characters
+    """
     video = open(file, 'rb')
     response = twitter.upload_video(media=video, media_type='video/mp4')
     twit.update_status(status=statustext, media_ids=[response['media_id']])
