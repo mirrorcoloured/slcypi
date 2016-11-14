@@ -348,7 +348,56 @@ class UltrasonicSensor():
         if self.verbose:
             print(self.name,'completed multimeasure')
         return o
-    
+
+class Servo():
+    """Initialize with control pin
+    pin <int>
+    [name] <str>, identify this sensor
+    [verbose] <bool>, print every action
+    """
+    def __init__(self, pin, name='', verbose=False):
+        self.name = name
+        self.verbose = verbose
+        self.pin = pin
+        self.position = 3 # ensures the first move has enough time
+        if self.verbose:
+            print('Initializing Servo',self.name,'...',end=' ')
+        self.pos = {'left':1, 'right':10, 'center':5.5}
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setup(self.pin, GPIO.OUT)
+        self.pwm = PWMPin(self.pin, 50)
+        p.start(0)
+        Sleep(2)
+        if self.verbose:
+            print('Done')
+    def __posmap__(self, value) -> float:
+        """Returns a mapping transformation
+        [-1,1] -> [1,10]
+        """
+        # dx = 2 # -1 to 1
+        # dy = 9 # 1 to 10
+        # ox = 1 # -1 -> 0
+        # oy = 1 # 0 -> 1
+        # (value + ox) * (dy / dx) + oy
+        return (value + 1) * (9 / 2) + 1
+    def move(self, position) -> None:
+        """Moves to a specified position
+        ---
+        position <float>, [-1,1] left to right
+        """
+        if position < -1 or position > 1:
+            print('Error, position must be between -1 and 1')
+        else:
+            if self.verbose:
+                print(self.name,'moving to position',position,'...',end='')
+            dt = abs(self.position - position) * .25
+            self.pwm.ChangeDutyCycle(self.__posmap__(position))
+            time.sleep(dt)
+            self.pwm.ChangeDutyCycle(0)
+            self.position = position
+            if self.verbose:
+                print('Done')
+
 class DCMotor():
 #   OA |-\/-| GND
 #  VCC |    | IB
