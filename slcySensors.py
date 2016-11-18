@@ -1,6 +1,6 @@
 import RPi.GPIO as GPIO
 
-from slcyDataStructures import *
+from slcypi.slcyDataStructures import *
 import time
 
 class UltrasonicSensor():
@@ -14,9 +14,18 @@ class UltrasonicSensor():
 # |     O       O     |
 # |---|---|---|---|---|
 #   VCC TRIG ECHO GND
+
+# appears to be reading in meters
+# [ ] add conversion to different units
+# [ ] add continuous read mode
+# [ ] add visual distance output
+#     |O       x
+#     |O        x
     def __init__(self, pins, name='', verbose=False):
         self.name = name
         self.verbose = verbose
+        if self.verbose:
+            print('Initializing Ultrasonic Sensor',self.name,'...',end=' ')
         if type(pins) is dict:
             self.pins = pins
         elif type(pins) is list:
@@ -26,8 +35,9 @@ class UltrasonicSensor():
             for i in range(0,len(c)):
                 p[c[i]] = pins[i]
             self.pins = p
-        if self.verbose:
-            print('Initializing Ultrasonic Sensor',self.name,'...',end=' ')
+        self.conversion = {'in':39.3701, 'inch':39.3701, 'inches':39.3701,
+                           'ft':3.28084, 'foot':3.28084, 'feet':3.28084,
+                           'cm':10, 'centimeters':10}
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.pins['trig'], GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(self.pins['echo'], GPIO.IN)

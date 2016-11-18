@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
-from slcyMovement import *
-from slcySensors import *
+from slcypi.slcyMovement import *
+from slcypi.slcySensors import *
 
 class UltraServo():
     """Initialize with list of GPIO pins according to:

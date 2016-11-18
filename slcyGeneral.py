@@ -1,3 +1,4 @@
+import RPi.GPIO as GPIO
 from twython import Twython
 import time
 

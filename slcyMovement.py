@@ -1,6 +1,6 @@
 import RPi.GPIO as GPIO
 import time
-from slcyPins import *
+from slcypi.slcyPins import *
 
 class Servo():
     """Initialize with control pin
