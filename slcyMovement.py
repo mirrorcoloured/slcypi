@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 import time
-from slcypi.slcyPins import *
+#from slcypi.slcyPins import *
+import slcypi.slcyPins as Pins
 
 class Servo():
     """Initialize with control pin
@@ -20,7 +21,7 @@ class Servo():
             print('Initializing Servo',self.name,'...',end=' ')
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.pin, GPIO.OUT)
-        self.__pwm__ = PWMPin(self.pin, freq=50, dutycycle=0, on=True)
+        self.__pwm__ = Pins.PWMPin(self.pin, freq=50, dutycycle=0, on=True)
         time.sleep(2)
         if self.verbose:
             print('Done')
@@ -38,6 +39,8 @@ class Servo():
         """Checks if a value is between -1 and 1"""
         return value >= -1 and value <= 1
     def getpos(self) -> float:
+        """Returns the servo position (Between -1 and 1)
+        """
         return self.__position__
     def move(self, position) -> None:
         """Moves to a specified position
