@@ -3,7 +3,9 @@ import time
 #from slcypi.slcyMovement import *
 #from slcypi.slcySensors import *
 import slcypi.slcyMovement as Movement
+import slcypi.slcyDataStructures as DataStructures
 import slcypi.slcySensors as Sensors
+import slcypi.slcyPins as Pins
 
 class UltraServo(Movement.Servo, Sensors.UltrasonicSensor):
     """Initialize with list of GPIO pins according to:
@@ -34,14 +36,13 @@ class UltraServo(Movement.Servo, Sensors.UltrasonicSensor):
                            'cm':10, 'centimeters':10}
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.pins['serv'], GPIO.OUT)
-        self.__pwm__ = PWMPin(self.pin, freq=50, dutycycle=0, on=True)
+        self.__pwm__ = Pins.PWMPin(self.pin, freq=50, dutycycle=0, on=True)
         GPIO.setup(self.pins['trig'], GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(self.pins['echo'], GPIO.IN)
-        self.__u__ = UltrasonicSensor([self.pins['trig'],self.pins['echo']],name+'(sensor)',self.verbose)
         if self.verbose:
             print('Done')
     # COMBINED FUNCTIONS
-    def sweep(self, a, b, step) -> Dataset:
+    def sweep(self, a, b, step) -> DataStructures.Dataset:
         """Takes a series of measurements across an angle range
         a <float>, a and b must be within [-1, 1]
         b <float>, 
@@ -60,7 +61,7 @@ class UltraServo(Movement.Servo, Sensors.UltrasonicSensor):
             for i in range(dx):
                 x.append(a + i * step)
             x.append(b)
-            r = Dataset([])
+            r = DataStructures.Dataset([])
             for i in x:
                 self.move(i)
                 r.add(self.measure())

@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 
-from slcypi.slcyDataStructures import *
+#from slcypi.slcyDataStructures import *
+import slcypi.slcyDataStructures as DataStructures
 import time
 
 class UltrasonicSensor():
@@ -66,7 +67,7 @@ class UltrasonicSensor():
         if self.verbose:
             print(self.name,'measured',r)
         return r
-    def multimeasure(self, interval=.1, totalmeasurements=None, totaltime=None, digits=4) -> Dataset:
+    def multimeasure(self, interval=.1, totalmeasurements=None, totaltime=None, digits=4) -> DataStructures.Dataset:
         """Takes regular measurements, up to a max number or time, and returns a Dataset object
         interval <float>, time between each measurement
         totalmeasurements <int>, max number of measurements
@@ -84,7 +85,7 @@ class UltrasonicSensor():
             tm = min(totaltime / interval, totalmeasurements)
         if self.verbose:
             print(self.name,'taking',tm,'measurements over',tm*interval,'seconds')
-        o = Dataset([]) # initialize Dataset
+        o = DataStructures.Dataset([]) # initialize Dataset
         while len(o) < tm: # until I have enough data points
             o.append(self.measure(digits))
             time.sleep(interval)
