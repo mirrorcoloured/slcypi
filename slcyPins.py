@@ -1,79 +1,123 @@
 import RPi.GPIO as GPIO
 
+# GPIO.HIGH = 1
+# GPIO.LOW = 0
+
 class OutPin():
     """Sets up a pin for output
-    pin <int>
+    pin <dict>, <list>, <int>, {'out':1}
     [name] <str>, identify this pin
     [verbose] <bool>, print every action
     """
-    def __init__(self,pin,name='',verbose=False):
-        self.pin = pin
-        self.name = name
-        self.verbose = verbose
+    def __init__(self,pins={},name='',verbose=False):
+        self.__name__ = name
+        self.__verbose__ = verbose
+        if self.__verbose__:
+            print('Initializing OutPin',self.__name__,'...',end=' ')
+        self.__pins__ = self.__loadpins__(pins)
+        self.__setup__()
+        if self.__verbose__:
+            print('Done')
+    def __loadpins__(self,inp) -> dict:
+        if type(inp) is int:
+            return {'out':inp}
+        elif type(inp) is list:
+            return {'out':inp[0]}
+        elif type(inp) is dict:
+            return inp
+        else:
+            print('Invalid input type for pins:',inp,type(inp))
+            return {}
+    def __setup__(self) -> None:
+        if self.__verbose__:
+            print(self.__name__,'set to output')
         GPIO.setmode(GPIO.BOARD)
-        if self.verbose:
-            print(self.name,self.pin,'set to output')
-        GPIO.setup(self.pin,GPIO.OUT)
-    def on(self) -> None:
+        GPIO.setup(self.__pins__['out'], GPIO.OUT, initial=0)
+        self.__on__ = False
+    def on(self) -> bool:
         """Turns the pin on (sets to 3.3 V)"""
-        if self.verbose:
-            print(self.name,self.pin,'on')
-        GPIO.output(self.pin,GPIO.HIGH)
-    def off(self) -> None:
+        if self.__verbose__:
+            print(self.__name__,self.__pins__['out'],'on')
+        GPIO.output(self.pin,1)
+        self.__on__ = True
+        return self.__on__
+    def off(self) -> bool:
         """Turns the pin off (sets to 0 V)"""
-        if self.verbose:
-            print(self.name,self.pin,'off')
-        GPIO.output(self.pin,GPIO.LOW)
-    def toggle(self) -> None:
+        if self.__verbose__:
+            print(self.__name__,self.__pins__['out'],'off')
+        GPIO.output(self.pin,0)
+        self.__on__ = False
+        return self.__on__
+    def toggle(self) -> bool:
         """Toggles the pin on/off"""
-        if self.verbose:
-            print(self.name,self.pin,'toggled')
-        GPIO.output(self.pin,~self.get)
-    def get(self) -> int:
+        if self.__verbose__:
+            print(self.__name__,self.__pins__['out'],'toggled')
+        self.__on__ = not self.__on__
+        GPIO.output(self.pin,self.__on__)
+        return self.__on__
+    def get(self) -> bool:
         """Returns the current status of the pin
         0 = OFF, 0 V
         1 = ON, 3.3 V
         """
-        if self.verbose:
-            print(self.name,self.pin,'getting value')
-        return GPIO.input(self.pin)
+        if self.__verbose__:
+            print(self.__name__,self.__pins__['out'],'getting value')
+        return self.__on__
 
 class InPin():
     """Sets up a pin for input
-    pin <int>
+    pins <dict>, <list>, <int>, {'in':1}
     [pud] <str> 'OFF', 'DOWN', or 'UP', sets an internal pull-up or pull-down resistor
     [name] <str>, identify this pin
     [verbose] <bool>, print every action
     """
-    def __init__(self,pin,pud='OFF',name='',verbose=False):
-        self.pin = pin
-        self.name = name
-        self.verbose = verbose
+    def __init__(self,pins,pud='OFF',name='',verbose=False):
+        self.__name__ = name
+        self.__verbose__ = verbose
+        if self.__verbose__:
+            print('Initializing InPin',self.__name__,'...',end=' ')
+        self.__pins__ = self.__loadpins__(pins)
+        self.__setup__(pud)
+        if self.__verbose__:
+            print('Done')
+    def __loadpins__(self,inp) -> dict:
+        if type(inp) is int:
+            return {'in':inp}
+        elif type(inp) is list:
+            return {'in':inp[0]}
+        elif type(inp) is dict:
+            return inp
+        else:
+            print('Invalid input type for pins:',inp,type(inp))
+            return {}
+    def __setup__(self,pud) -> None:
         GPIO.setmode(GPIO.BOARD)
-        if ud == 'OFF':
-            if self.verbose:
-                print(self.name,self.pin,'set to input (off)')
-            GPIO.setup(self.pin,GPIO.IN,GPIO.PUD_OFF)
-        elif ud == 'UP':
-            if self.verbose:
-                print(self.name,self.pin,'set to input (up)')
-            GPIO.setup(self.pin,GPIO.IN,GPIO.PUD_UP)
-        elif ud == 'DOWN':
-            if self.verbose:
-                print(self.name,self.pin,'set to input (down)')
-            GPIO.setup(self.pin,GPIO.IN,GPIO.PUD_DOWN)
-    def get(self) -> int:
+        if pud == 'OFF':
+            if self.__verbose__:
+                print(self.__name__,'set to input (no internal resistor)')
+            GPIO.setup(self.__pins__['in'],GPIO.IN,GPIO.PUD_OFF)
+        elif pud == 'UP':
+            if self.__verbose__:
+                print(self.__name__,'set to input (pull-up resistor)')
+            GPIO.setup(self.__pins__['in'],GPIO.IN,GPIO.PUD_UP)
+        elif pud == 'DOWN':
+            if self.__verbose__:
+                print(self.__name__,'set to input (pull-down resistor)')
+            GPIO.setup(self.__pins__['in'],GPIO.IN,GPIO.PUD_DOWN)
+        else:
+            print('Invalid PUD value:',pud)
+    def get(self) -> bool:
         """Returns the current status of the pin
         0 = OFF, 0 V
         1 = ON, 3.3 V
         """
-        if self.verbose:
-            print(self.name,self.pin,'getting value')
-        return GPIO.input(self.pin)
+        if self.__verbose__:
+            print(self.__name__,'getting value')
+        return GPIO.input(self.__pins__['in'])
 
 class EventPin():
     """Sets up a pin for input with a triggering function
-    pin <int>
+    pins <dict>, <list>, <int>, {'in':1}
     function <func>
     [risefall] <str> 'RISING' or 'FALLING', detects signal edges up or down
     [pud] <str> 'OFF', 'DOWN', or 'UP', sets an internal pull-up or pull-down resistor
@@ -81,93 +125,133 @@ class EventPin():
     [name] <str>, identify this pin
     [verbose] <bool>, print every action
     """
-    def __init__(self,pin,function,risefall='RISING',pud=GPIO.PUD_UP,bouncetime=250,name='',verbose=False):
-        self.pin = pin
-        self.name = name
-        self.function = function
-        self.risefall = risefall
-        self.pud = pud
-        self.bouncetime = bouncetime
-        self.verbose = verbose
-        if self.verbose:
-            print(name,'setting up',function,'on',pin)
-        GPIO.setmode(GPIO.BOARD)
-        if self.pud == GPIO.PUD_UP: # GPIO <-> button <-> GND
-            GPIO.setup(self.pin,GPIO.IN,GPIO.PUD_UP)
-        elif self.pud == GPIO.PUD_DOWN: # GPIO <-> button <-> 3.3V
-            GPIO.setup(self.pin,GPIO.IN,GPIO.PUD_DOWN)
-        if self.risefall == 'RISING':
-            if self.verbose:
-                print(self.name,self.pin,'set to input (off)')
-            #GPIO.add_event_detect(self.pin,GPIO.FALLING,function,bouncetime=self.bouncetime) #opposite due to wiring
-            GPIO.add_event_detect(self.pin,GPIO.FALLING,bouncetime=self.bouncetime)
-        elif self.risefall == 'FALLING':
-            if self.verbose:
-                print(self.name,self.pin,'set to input (up)')
-            #GPIO.add_event_detect(self.pin,GPIO.RISING,function,bouncetime=self.bouncetime)
-            GPIO.add_event_detect(self.pin,GPIO.RISING,bouncetime=self.bouncetime)
+    def __init__(self,pins,function,risefall='RISING',pud='OFF',bouncetime=250,name='',verbose=False):
+        self.__name__ = name
+        self.__verbose__ = verbose
+        if self.__verbose__:
+            print('Initializing EventPin',self.__name__,'...',end=' ')
+        self.__function__ = function
+        self.__pins__ = self.__loadpins__(pins)
+        self.__setup__(pud,risefall,bouncetime,function)
+        if self.__verbose__:
+            print('Done')
+    def __loadpins__(self,inp) -> dict:
+        if type(inp) is int:
+            return {'in':inp}
+        elif type(inp) is list:
+            return {'in':inp[0]}
+        elif type(inp) is dict:
+            return inp
         else:
-            print('ERROR:',self.name,self.pin,'set to invalid risefall value')
+            print('Invalid input type for pins:',inp,type(inp))
+            return {}
+    def __setup__(self,pud,risefall,bouncetime,function) -> None:
+        GPIO.setmode(GPIO.BOARD)
+        if pud == 'OFF':
+            if self.__verbose__:
+                print(self.__name__,'set to input (no internal resistor)')
+            GPIO.setup(self.__pins__['in'],GPIO.IN,GPIO.PUD_OFF)
+        elif pud == 'UP': # GPIO <-> button <-> GND
+            if self.__verbose__:
+                print(self.__name__,'set to input (pull-up resistor)')
+            GPIO.setup(self.__pins__['in'],GPIO.IN,GPIO.PUD_UP)
+        elif pud == 'DOWN': # GPIO <-> button <-> 3.3V
+            if self.__verbose__:
+                print(self.__name__,'set to input (pull-down resistor)')
+            GPIO.setup(self.__pins__['in'],GPIO.IN,GPIO.PUD_DOWN)
+        else:
+            print('Invalid PUD value:',pud)
+        if risefall == 'RISING':
+            if self.__verbose__:
+                print(self.__name__,'set to input (off)')
+            #GPIO.add_event_detect(self.pin,GPIO.FALLING,function,bouncetime=self.bouncetime) #opposite due to wiring
+            GPIO.add_event_detect(self.__pins__['in'],GPIO.FALLING,bouncetime=bouncetime)
+        elif risefall == 'FALLING':
+            if self.__verbose__:
+                print(self.__name__,'set to input (up)')
+            #GPIO.add_event_detect(self.pin,GPIO.RISING,function,bouncetime=self.bouncetime)
+            GPIO.add_event_detect(self.__pins__['in'],GPIO.RISING,bouncetime=bouncetime)
+        else:
+            print('Invalid RISEFALL value:',risefall)
         GPIO.add_event_callback(self.pin,function)
     def setfunction(self,function) -> None:
         """Not implemented
         Need to figure out how to remove event detect triggers
         """
         pass
-    def get(self) -> int:
+    def get(self) -> bool:
         """Returns the current status of the pin
         0 = OFF, 0 V
         1 = ON, 3.3 V
         """
-        if self.verbose:
-            print(self.pin,self.name,'getting value')
-        return GPIO.input(self.pin)
+        if self.__verbose__:
+            print(self.__name__,'getting value')
+        return GPIO.input(self.__pins__['in'])
 
 class PWMPin():
     """Sets up a pin for pulse width modulated output
-    pin <int>
+    pins <dict>, <list>, <int>, {'out':1}
     [freq] <int> frequency of cycle
     [dutycycle] <int>, percentage of time active (0-100)
     [on] <bool>, start on
     [name] <str>, identify this pin
     [verbose] <bool>, print every action
     """
-    def __init__(self, pin, freq=1023, dutycycle=100, on=True, name='', verbose=False):
-        self.pin = pin
-        self.name = name
-        self.freq = freq
-        self.dutycycle = dutycycle
-        self.verbose = verbose
-        if self.verbose:
-            print(self.name,self.pin,'set to PWM (',self.freq,'% ,',self.dutycycle,' Hz) ON:',on)
+    def __init__(self, pins, freq=1023, dutycycle=100, on=False, name='', verbose=False):
+        self.__name__ = name
+        self.__verbose__ = verbose
+        if self.__verbose__:
+            print('Initializing PWMPin',self.__name__,'...',end=' ')
+        self.__pins__ = self.__loadpins__(pins)
+        self.__setup__(on,freq,dutycycle)
+        if self.__verbose__:
+            print('Done')
+    def __loadpins__(self,inp) -> dict:
+        if type(inp) is int:
+            return {'out':inp}
+        elif type(inp) is list:
+            return {'out':inp[0]}
+        elif type(inp) is dict:
+            return inp
+        else:
+            print('Invalid input type for pins:',inp,type(inp))
+            return {}
+    def __setup__(self,on,freq,dutycycle) -> None:
+        if self.__verbose__:
+            print(self.__name__,'set to output')
         GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(self.pin, GPIO.OUT)
-        self.pwm = GPIO.PWM(self.pin, self.freq)
+        GPIO.setup(self.__pins__['out'], GPIO.OUT, initial=0)
+        self.__on__ = on
+        self.__freq__ = freq
+        self.__dc__ = dutycycle
+        self.__pwm__ = GPIO.PWM(self.__pins__['out'], self.__freq__)
+        if self.__verbose__:
+            print(self.__name__,'set to PWM (',self.__freq__,' Hz ,',self.__dc__,'%) ON:',on)
         if on:
-            self.pwm.start(self.dutycycle)
+            self.__pwm__.start(self.__dc__)
     def on(self) -> None:
         """Turns the PWM pin on"""
-        if self.verbose:
-            print(self.name,self.pin,'on')
-        self.pwm.start(self.dutycycle)
+        if self.__verbose__:
+            print(self.__name__,'on')
+        self.__pwm__.start(self.dutycycle)
     def off(self) -> None:
         """Turns the PWM pin off"""
-        if self.verbose:
-            print(self.name,self.pin,'off')
-        self.pwm.stop()
+        if self.__verbose__:
+            print(self.__name__,'off')
+        self.__pwm__.stop()
     def setfreq(self, freq) -> None:
         """Sets the frequency of the PWM pin
         freq <int>
         """
-        if self.verbose:
-            print(self.name,self.pin,'setting frequency to',freq)
-        self.freq = freq
-        self.pwm.ChangeFrequency(self.freq)
+        if self.__verbose__:
+            print(self.__name__,'setting frequency to',freq)
+        self.__freq__ = freq
+        self.__pwm__.ChangeFrequency(self.__freq__)
     def setdutycycle(self, dutycycle) -> None:
         """Sets the duty cycle of the PWM pin
         dutycycle <int>, (1-100)
         """
-        if self.verbose:
-            print(self.name,self.pin,'setting duty cycle to',dutycycle)
-        self.dutycycle = dutycycle
-        self.pwm.ChangeDutyCycle(self.dutycycle)
+        if self.__verbose__:
+            print(self.__name__,'setting duty cycle to',dutycycle)
+        self.__dc__ = dutycycle
+        self.__pwm__.ChangeDutyCycle(self.__dc__)

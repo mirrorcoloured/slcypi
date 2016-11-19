@@ -36,6 +36,7 @@ class UltrasonicSensor():
             for i in range(0,len(c)):
                 p[c[i]] = pins[i]
             self.pins = p
+        self.__lastresult__ = 0
         self.conversion = {'in':39.3701, 'inch':39.3701, 'inches':39.3701,
                            'ft':3.28084, 'foot':3.28084, 'feet':3.28084,
                            'cm':10, 'centimeters':10}
@@ -45,6 +46,8 @@ class UltrasonicSensor():
         time.sleep(2)
         if self.verbose:
             print('Done')
+    def getlastresult(self):
+        return self.__lastresult__
     def measure(self, digits=4) -> float:
         """---
         Returns a distance measurement
@@ -66,6 +69,7 @@ class UltrasonicSensor():
         r = round((t2-t1) * 340 / 2, digits)
         if self.verbose:
             print(self.name,'measured',r)
+        self.__lastresult__ = r
         return r
     def multimeasure(self, interval=.1, totalmeasurements=None, totaltime=None, digits=4) -> DataStructures.Dataset:
         """Takes regular measurements, up to a max number or time, and returns a Dataset object
@@ -91,4 +95,5 @@ class UltrasonicSensor():
             time.sleep(interval)
         if self.verbose:
             print(self.name,'completed multimeasure')
+        self.__lastresult__ = o
         return o

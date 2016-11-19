@@ -18,8 +18,8 @@ class UltraServo(Movement.Servo, Sensors.UltrasonicSensor):
     # BROWN     GND     0 V
     # ORANGE    CTRL    GPIO
     def __init__(self, pins, name='', verbose=False):
-        self.name = name
-        self.verbose = verbose
+        self.__name__ = name
+        self.__verbose__ = verbose
         if type(pins) is dict:
             self.pins = pins
         elif type(pins) is list:
@@ -29,17 +29,19 @@ class UltraServo(Movement.Servo, Sensors.UltrasonicSensor):
             for i in range(0,len(c)):
                 p[c[i]] = pins[i]
             self.pins = p
-        if self.verbose:
-            print('Initializing UltraServo',self.name,'...',end=' ')
+        if self.__verbose__:
+            print('Initializing UltraServo',self.__name__,'...',end=' ')
+        self.__position__ = 3 # ensures the first move has enough time
+        self.__lastresult__ = 0
         self.conversion = {'in':39.3701, 'inch':39.3701, 'inches':39.3701,
                            'ft':3.28084, 'foot':3.28084, 'feet':3.28084,
                            'cm':10, 'centimeters':10}
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.pins['serv'], GPIO.OUT)
-        self.__pwm__ = Pins.PWMPin(self.pin, freq=50, dutycycle=0, on=True)
+        self.__pwm__ = Pins.PWMPin(self.pins['serv'], freq=50, dutycycle=0, on=True)
         GPIO.setup(self.pins['trig'], GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(self.pins['echo'], GPIO.IN)
-        if self.verbose:
+        if self.__verbose__:
             print('Done')
     # COMBINED FUNCTIONS
     def sweep(self, a, b, step) -> DataStructures.Dataset:
@@ -53,8 +55,8 @@ class UltraServo(Movement.Servo, Sensors.UltrasonicSensor):
         elif (b-a < 0 and step > 0) or (b-a > 0 and step < 0):
             print('Error, step and a -> b do not match')
         else:
-            if self.verbose:
-                print(self.name,'sweeping from',a,'to',b,'with step',step)
+            if self.__verbose__:
+                print(self.__name__,'sweeping from',a,'to',b,'with step',step)
             rng = abs(b - a)
             dx = int((rng) / step) + 1
             x = []
@@ -64,6 +66,7 @@ class UltraServo(Movement.Servo, Sensors.UltrasonicSensor):
             r = DataStructures.Dataset([])
             for i in x:
                 self.move(i)
-                r.add(self.measure())
+                r.append(self.measure())
+            self.__lastresult__ = r
             return r
 
