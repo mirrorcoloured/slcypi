@@ -1,4 +1,4 @@
-#import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 from twython import Twython
 import time
 import sys
@@ -33,7 +33,7 @@ def LoadPins(mapping,inp) -> dict:
         return {mapping[0]:inp}
     elif type(inp) is list and len(mapping) == len(inp):
         o = {}
-        for i in range(inp):
+        for i in range(len(inp)):
             o[mapping[i]] = inp[i]
         return o
     elif type(inp) is dict:

@@ -23,7 +23,7 @@ class UltraServo(Movement.Servo, Sensors.UltrasonicSensor):
         self.__verbose__ = verbose
         if self.__verbose__:
             print('Initializing UltraServo',self.__name__,'...',end=' ')
-        self.__pins__ = General.LoadPins(['trig','echo','serv'],pins)
+        self.__pins__ = General.LoadPins(['serv','trig','echo'],pins)
         self.__ultraservosetup__()
         if self.__verbose__:
             print('Done')

@@ -25,10 +25,9 @@ class Servo():
             print('Done')
     def __servosetup__(self) -> None:
         GPIO.setmode(GPIO.BOARD)
+        self.__pwm__ = Pins.PWMPin(self.__pins__['serv'], freq=50, dutycycle=0, on=True)
         self.__position__ = 1 # ensures the first move has enough time
         self.center() # initializes to center
-        self.__pwm__ = Pins.PWMPin(self.__pins__['serv'], freq=50, dutycycle=0, on=False)
-        self.__on__ = False
     def __posmap__(self, value) -> float:
         """Returns a mapping transformation
         [-1,1] -> [1,10]
@@ -46,19 +45,22 @@ class Servo():
         """Returns the servo position (Between -1 and 1)
         """
         return self.__position__
-    def move(self, position) -> None:
+    def move(self, target) -> None:
         """Moves to a specified position
         ---
         position <float>, [-1,1] left to right
         """
-        if self.__inrange__(position):
+        if self.__inrange__(target):
             if self.__verbose__:
-                print(self.__name__,'moving to position',position,'...',end='')
-            dt = abs(self.__position__ - position) * .25
-            self.__pwm__.setdutycycle(self.__posmap__(position))
+                print(self.__name__,'moving to position',target,'...',end='')
+            dt = abs(self.__position__ - target) * .3
+            print('dt',dt)
+            self.__pwm__.setdutycycle(self.__posmap__(target))
+            print('sleeping')
             time.sleep(dt)
+            print('waking')
             self.__pwm__.setdutycycle(0)
-            self.__position__ = position
+            self.__position__ = target
             if self.__verbose__:
                 print('Done')
         else:

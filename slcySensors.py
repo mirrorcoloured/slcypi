@@ -54,7 +54,7 @@ class UltrasonicSensor():
             print(self.__name__,'setting unit to',unit)
         if unit in self.__conversion__:
             self.__unit__ = self.__conversion__[unit]
-        else
+        else:
             print('Invalid unit entered:',unit)
     def measure(self, digits=4, printimage=False) -> float:
         """---
