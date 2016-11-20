@@ -1,7 +1,8 @@
 import RPi.GPIO as GPIO
 import time
-#from slcypi.slcyPins import *
+
 import slcypi.slcyPins as Pins
+import slcypi.slcyGeneral as General
 
 class Servo():
     """Initialize with control pin
@@ -17,25 +18,16 @@ class Servo():
         self.__verbose__ = verbose
         if self.__verbose__:
             print('Initializing Servo',self.__name__,'...',end=' ')
-        self.__position__ = 0 # ensures the first move has enough time
-        self.__pins__ = self.__loadpins__(pins)
-        self.__setup__()
+        self.__pins__ = General.LoadPins(['serv'],pins)
+        self.__servosetup__()
         time.sleep(2)
         if self.__verbose__:
             print('Done')
-    def __loadpins__(self,inp) -> dict:
-        if type(inp) is int:
-            return {'serv':inp}
-        elif type(inp) is list:
-            return {'serv':inp[0]}
-        elif type(inp) is dict:
-            return inp
-        else:
-            print('Invalid input type for pins:',inp,type(inp))
-            return {}
-    def __setup__(self) -> None:
+    def __servosetup__(self) -> None:
         GPIO.setmode(GPIO.BOARD)
-        self.__pwm__ = Pins.PWMPin(self.__pins__['serv'], freq=50, dutycycle=0, on=True)
+        self.__position__ = 1 # ensures the first move has enough time
+        self.center() # initializes to center
+        self.__pwm__ = Pins.PWMPin(self.__pins__['serv'], freq=50, dutycycle=0, on=False)
         self.__on__ = False
     def __posmap__(self, value) -> float:
         """Returns a mapping transformation
@@ -98,88 +90,95 @@ class Servo():
         self.move(0)
 
 class DCMotor():
+    """Initialize with control pin
+    pins <dict>, <list>, <int>, {'IA':1,'IB':2}
+    direction <int>, 1 forward, -1 backward
+    speed <int>, [0:100]
+    [name] <str>, identify this sensor
+    [verbose] <bool>, print every action
+    """
 #   OA |-\/-| GND
 #  VCC |    | IB
 #  VCC |    | IA
 #   OB |----| GND
 # VCC accepts 2.5 - 12 V
-    def __init__(self, name, pins, on=True ,direction=1, speed=50, verbose=False):
+    def __init__(self, pins, direction=1, speed=50, on=True, name = '', verbose=False):
         self.__name__ = name
         self.__verbose__ = verbose
         if self.__verbose__:
-            print(self.__name__,'setting up')
-        self.direction = direction
-        self.speed = speed
-        self.running = on
-        if type(pins) is dict:
-            self.pins = pins
-        elif type(pins) is list:
-            p = {}
-            c = ['IA','IB']
-            i = 0
-            for i in range(0,len(c)):
-                p[c[i]] = pins[i]
-            self.pins = p
+            print('Initializing DCMotor',self.__name__,'...',end=' ')
+        self.__pins__ = General.LoadPins(['IA','IB'],pins)
+        self.__dcmotorsetup__(direction,speed,on)
+        if self.__verbose__:
+            print('Done')
+    def __dcmotorsetup__(self,direction,speed,on) -> None:
         GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(self.pins['IA'], GPIO.OUT)
-        GPIO.setup(self.pins['IB'], GPIO.OUT)
-        GPIO.output(self.pins['IA'], GPIO.LOW)
-        GPIO.output(self.pins['IB'], GPIO.LOW)
-        self.pwm = PWMPin(self.pins['IA'],2000,self.speed)
+        GPIO.setup(self.__pins__['IA'], GPIO.OUT, initial=0)
+        GPIO.setup(self.__pins__['IB'], GPIO.OUT, initial=0)
+        self.__pwm__ = PWMPin(self.__pins__['IA'],2000,self.__speed__)
+        self.__direction__ = direction
+        self.__speed__ = speed
+        self.__running__ = on
     def start(self):
         if self.__verbose__:
             print(self.__name__,'starting up')
-        self.running = True
-        if self.direction:
+        self.__running__ = True
+        if self.__direction__:
             self.forward()
         else:
             self.backward()
     def stop(self):
         if self.__verbose__:
             print(self.__name__,'stopping')
-        self.running = False
-        GPIO.output(self.pins['IA'], GPIO.LOW)
-        GPIO.output(self.pins['IB'], GPIO.LOW)
-        self.pwm.off()
+        self.__running__ = False
+        GPIO.output(self.__pins__['IA'], 0)
+        GPIO.output(self.__pins__['IB'], 0)
+        self.__pwm__.off()
     def power(self):
         if self.__verbose__:
             print(self.__name__,'toggling power')
-        if self.running:
+        if self.__running__:
             self.stop()
         else:
             self.start()
     def forward(self):
         if self.__verbose__:
             print(self.__name__,'going forward')
-        self.direction = 1
-        GPIO.output(self.pins['IA'], GPIO.HIGH)
-        GPIO.output(self.pins['IB'], GPIO.LOW)
-        self.pwm.on()
+        self.__direction__ = 1
+        GPIO.output(self.__pins__['IA'], 1)
+        GPIO.output(self.__pins__['IB'], 0)
+        self.__pwm__.on()
     def backward(self):
         if self.__verbose__:
             print(self.__name__,'going backward')
-        self.direction = 0
-        GPIO.output(self.pins['IA'], GPIO.LOW)
-        GPIO.output(self.pins['IB'], GPIO.HIGH)
-        self.pwm.on()
+        self.__direction__ = 0
+        GPIO.output(self.__pins__['IA'], 0)
+        GPIO.output(self.__pins__['IB'], 1)
+        self.__pwm__.on()
     def reverse(self):
         if self.__verbose__:
             print(self.__name__,'toggling direction')
-        if self.running:
-            if self.direction:
+        if self.__running__:
+            if self.__direction__:
                 self.forward()
             else:
                 self.backward()
         else:
-            if self.direction:
-                self.direction = 0
+            if self.__direction__:
+                self.__direction__ = 0
             else:
-                self.direction = 1
+                self.__direction__ = 1
     def setspeed(self,speed=50):
         if self.__verbose__:
             print(self.__name__,'setting speed to',speed)
-        self.speed = speed
-        if self.direction:
-            self.pwm.setdutycycle(self.speed)
+        self.__speed__ = speed
+        if self.__direction__:
+            self.__pwm__.setdutycycle(self.__speed__)
         else:
-            self.pwm.setdutycycle(100 - self.speed)
+            self.__pwm__.setdutycycle(100 - self.__speed__)
+    def getspeed(self) -> float:
+        return self.__speed__
+    def getdirection(self) -> int:
+        return self.__direction__
+    def isrunning(self) -> bool:
+        return self.__running__

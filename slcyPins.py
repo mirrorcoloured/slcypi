@@ -1,5 +1,7 @@
 import RPi.GPIO as GPIO
 
+import slcypi.slcyGeneral as General
+
 # GPIO.HIGH = 1
 # GPIO.LOW = 0
 
@@ -14,21 +16,11 @@ class OutPin():
         self.__verbose__ = verbose
         if self.__verbose__:
             print('Initializing OutPin',self.__name__,'...',end=' ')
-        self.__pins__ = self.__loadpins__(pins)
-        self.__setup__()
+        self.__pins__ = General.LoadPins(['out'],pins)
+        self.__outpinsetup__()
         if self.__verbose__:
             print('Done')
-    def __loadpins__(self,inp) -> dict:
-        if type(inp) is int:
-            return {'out':inp}
-        elif type(inp) is list:
-            return {'out':inp[0]}
-        elif type(inp) is dict:
-            return inp
-        else:
-            print('Invalid input type for pins:',inp,type(inp))
-            return {}
-    def __setup__(self) -> None:
+    def __outpinsetup__(self) -> None:
         if self.__verbose__:
             print(self.__name__,'set to output')
         GPIO.setmode(GPIO.BOARD)
@@ -76,21 +68,11 @@ class InPin():
         self.__verbose__ = verbose
         if self.__verbose__:
             print('Initializing InPin',self.__name__,'...',end=' ')
-        self.__pins__ = self.__loadpins__(pins)
-        self.__setup__(pud)
+        self.__pins__ = General.LoadPins(['in'],pins)
+        self.__inpinsetup__(pud)
         if self.__verbose__:
             print('Done')
-    def __loadpins__(self,inp) -> dict:
-        if type(inp) is int:
-            return {'in':inp}
-        elif type(inp) is list:
-            return {'in':inp[0]}
-        elif type(inp) is dict:
-            return inp
-        else:
-            print('Invalid input type for pins:',inp,type(inp))
-            return {}
-    def __setup__(self,pud) -> None:
+    def __inpinsetup__(self,pud) -> None:
         GPIO.setmode(GPIO.BOARD)
         if pud == 'OFF':
             if self.__verbose__:
@@ -131,21 +113,11 @@ class EventPin():
         if self.__verbose__:
             print('Initializing EventPin',self.__name__,'...',end=' ')
         self.__function__ = function
-        self.__pins__ = self.__loadpins__(pins)
-        self.__setup__(pud,risefall,bouncetime,function)
+        self.__pins__ = General.LoadPins(['in'],pins)
+        self.__eventpinsetup__(pud,risefall,bouncetime,function)
         if self.__verbose__:
             print('Done')
-    def __loadpins__(self,inp) -> dict:
-        if type(inp) is int:
-            return {'in':inp}
-        elif type(inp) is list:
-            return {'in':inp[0]}
-        elif type(inp) is dict:
-            return inp
-        else:
-            print('Invalid input type for pins:',inp,type(inp))
-            return {}
-    def __setup__(self,pud,risefall,bouncetime,function) -> None:
+    def __eventpinsetup__(self,pud,risefall,bouncetime,function) -> None:
         GPIO.setmode(GPIO.BOARD)
         if pud == 'OFF':
             if self.__verbose__:
@@ -202,21 +174,11 @@ class PWMPin():
         self.__verbose__ = verbose
         if self.__verbose__:
             print('Initializing PWMPin',self.__name__,'...',end=' ')
-        self.__pins__ = self.__loadpins__(pins)
-        self.__setup__(on,freq,dutycycle)
+        self.__pins__ = General.LoadPins(['out'],pins)
+        self.__pwmpinsetup__(on,freq,dutycycle)
         if self.__verbose__:
             print('Done')
-    def __loadpins__(self,inp) -> dict:
-        if type(inp) is int:
-            return {'out':inp}
-        elif type(inp) is list:
-            return {'out':inp[0]}
-        elif type(inp) is dict:
-            return inp
-        else:
-            print('Invalid input type for pins:',inp,type(inp))
-            return {}
-    def __setup__(self,on,freq,dutycycle) -> None:
+    def __pwmpinsetup__(self,on,freq,dutycycle) -> None:
         if self.__verbose__:
             print(self.__name__,'set to output')
         GPIO.setmode(GPIO.BOARD)

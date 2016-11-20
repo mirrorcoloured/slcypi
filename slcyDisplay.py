@@ -1,6 +1,8 @@
 import RPi.GPIO as GPIO
 import time
 
+import slcypi.slcyGeneral as General
+
 class SegmentDisplay():
 #
 # g f X a b
@@ -13,47 +15,45 @@ class SegmentDisplay():
 # |-------|
 # e d X c h
 #
-    def __init__(self,name,pins,verbose=False):
-        self.name = name # name to refer to
-        self.verbose = verbose # print each action
-        if type(pins) is dict: # accepts dict, ex. {'a':11, 'b':15, ...}
-            self.pins = pins
-        elif type(pins) is list: # accepts ordered list, ex. [11, 15, ...}
-            p = {}
-            c = 'hgfedcba'
-            i = 0
-            for i in range(0,8):
-                p[c[i]] = pins[i]
-            self.pins = p
+    def __init__(self, pins, name='', verbose=False):
+        self.__name__ = name # name to refer to
+        self.__verbose__ = verbose # print each action
+        if self.__verbose__:
+            print('Initializing Segment Display',self.__name__,'...',end=' ')
+        self.__pins__ = General.LoadPins(['h','g','f','e','d','c','b','a'],pins)
+        self.__segmentdisplaysetup__()
+        if self.__verbose__:
+            print('Done')
+    def __segmentdisplaysetup__(self) -> None:
         GPIO.setmode(GPIO.BOARD) # refer to board by pin number
-        for pin in self.pins.values(): # setup pins for output
+        for pin in self.__pins__.values(): # setup pins for output
             GPIO.setup(pin, GPIO.OUT)
             GPIO.output(pin, GPIO.LOW) # initialize low = off
-        self.trans = {'0':0b00011111,'1':0b00000110,'2':0b01011011,
-                      '3':0b01001111,'4':0b01100110,'5':0b01101101,
-                      '6':0b01111101,'7':0b00000111,'8':0b01111111,
-                      '9':0b01100111,'a':0b01110111,'b':0b01111100,
-                      'c':0b00111001,'d':0b01011110,'e':0b01111001,
-                      'f':0b01110001,'.':0b10000000}
+        self.__trans__ = {'0':0b00011111,'1':0b00000110,'2':0b01011011,
+                          '3':0b01001111,'4':0b01100110,'5':0b01101101,
+                          '6':0b01111101,'7':0b00000111,'8':0b01111111,
+                          '9':0b01100111,'a':0b01110111,'b':0b01111100,
+                          'c':0b00111001,'d':0b01011110,'e':0b01111001,
+                          'f':0b01110001,'.':0b10000000}
     def PATTERN(self,pat): # set outputs to bitstring pattern
-        if self.verbose:
-            print(self.name,'setting pattern',bin(pat))
-        for i in range(len(pins)):
-            GPIO.output(pins[i],pat & (1 << i))
-    def WRITE(self,character): # display a character (valid characters in self.trans)
-        if self.verbose:
-            print(self.name,'writing',character)
+        if self.__verbose__:
+            print(self.__name__,'setting pattern',bin(pat))
+        for i in range(len(self.__pins__)):
+            GPIO.output(self.__pins__[i],pat & (1 << i))
+    def WRITE(self,character): # display a character (valid characters in self.__trans__)
+        if self.__verbose__:
+            print(self.__name__,'writing',character)
         w = 0
         for c in character:
-            w = w | self.trans(c)
+            w = w | self.__trans__(c)
         self.PATTERN(w)
     def SET(self,segment,signal=1): # set a specific segment to a specific signal
-        if self.verbose:
-            print(self.name,'setting segment',segment,'to',signal)
+        if self.__verbose__:
+            print(self.__name__,'setting segment',segment,'to',signal)
         GPIO.output(self.pins[segment],signal)
     def OFF(self): # set all segments to off
-        if self.verbose:
-            print(self.name,'turning all segments off')
+        if self.__verbose__:
+            print(self.__name__,'turning all segments off')
         self.SET(0)
 
 class MultiSegmentDisplay():
@@ -69,69 +69,67 @@ class MultiSegmentDisplay():
 #        e  d  h  c  g  4
 #
 # 220 Ohm resistor on 1, 2, 3, and 4
-    def __init__(self,name,pins,digits=4,verbose=False):
-        self.name = name # name to refer to
-        self.verbose = verbose # print each action
-        self.digits = digits
-        self.cycle = 1
-        self.cyclechars = ''
-        if type(pins) is dict: # accepts dict, ex. {'a':11, 'b':15, ...}
-            self.pins = pins
-            # sort dict into list
-            #self.pinsl = 
-        elif type(pins) is list: # accepts ordered list, ex. [11, 15, ...}
-            self.pinsl = pins
-            p = {}
-            c = 'hgfedcba4321'
-            for i in range(0,len(c)):
-                p[c[i]] = pins[i]
-            self.pins = p
+    def __init__(self, pins, name='', verbose=False):
+        self.__name__ = name # name to refer to
+        self.__verbose__ = verbose # print each action
+        if self.__verbose__:
+            print('Initializing Multi-segment Display',self.__name__,'...',end=' ')
+        self.__pins__ = General.LoadPins(['h','g','f','e','d','c','b','a','4','3','2','1'],pins)
+        self.__multisegmentdisplaysetup__()
+        if self.__verbose__:
+            print('Done')
+    def __multisegmentdisplaysetup__(self) -> None:
         GPIO.setmode(GPIO.BOARD) # refer to board by pin number
-        for pin in self.pins.values():
+        for pin in self.__pins__.values():
             GPIO.setup(pin, GPIO.OUT)
             GPIO.output(pin, GPIO.HIGH) # initialize high = off
-        # nogood: k m v w x z
-        self.trans = {'0':0b001111110000,'1':0b000001100000,'2':0b010110110000,
-                      '3':0b010011110000,'4':0b011001100000,'5':0b011011010000,
-                      '6':0b011111010000,'7':0b000001110000,'8':0b011111110000,
-                      '9':0b011001110000,'a':0b011101110000,'b':0b011111000000,
-                      'c':0b001110010000,'d':0b010111100000,'e':0b011110010000,
-                      'f':0b011100010000,'g':0b011011110000,'h':0b011101000000,
-                      'i':0b000100000000,'j':0b000011100000,'k':0b100010000000,
-                      'l':0b001110000000,'m':0b100010000000,'n':0b010101000000,
-                      'o':0b010111000000,'p':0b011100110000,'q':0b011001110000,
-                      'r':0b010100000000,'s':0b011011010000,'t':0b011110000000,
-                      'u':0b000111000000,'v':0b100010000000,'w':0b100010000000,
-                      'x':0b100010000000,'y':0b011011100000,'z':0b100010000000,
-                      '.':0b100000000000,'!':0b100001100000,'?':0b110100110000,
-                      ' ':0b000000000000}
-        self.digits = {1:0b1110,2:0b1101,3:0b1011,4:0b0111,
-                       '1':0b1110,'2':0b1101,'3':0b1011,'4':0b0111}
+        self.__pinslist__ = []
+        for k in reversed(sorted(self.__pins__)): # might need to wrap list() around it?
+            self.__pinslist__.append(self.__pins__[k])
+        # no encoding: k m v w x z
+        self.__trans__ = {'0':0b001111110000,'1':0b000001100000,'2':0b010110110000,
+                          '3':0b010011110000,'4':0b011001100000,'5':0b011011010000,
+                          '6':0b011111010000,'7':0b000001110000,'8':0b011111110000,
+                          '9':0b011001110000,'a':0b011101110000,'b':0b011111000000,
+                          'c':0b001110010000,'d':0b010111100000,'e':0b011110010000,
+                          'f':0b011100010000,'g':0b011011110000,'h':0b011101000000,
+                          'i':0b000100000000,'j':0b000011100000,'k':0b100010000000,
+                          'l':0b001110000000,'m':0b100010000000,'n':0b010101000000,
+                          'o':0b010111000000,'p':0b011100110000,'q':0b011001110000,
+                          'r':0b010100000000,'s':0b011011010000,'t':0b011110000000,
+                          'u':0b000111000000,'v':0b100010000000,'w':0b100010000000,
+                          'x':0b100010000000,'y':0b011011100000,'z':0b100010000000,
+                          '.':0b100000000000,'!':0b100001100000,'?':0b110100110000,
+                          ' ':0b000000000000}
+        self.__digits__ = {1:0b1110,'1':0b1110,
+                           2:0b1101,'2':0b1101,
+                           3:0b1011,'3':0b1011,
+                           4:0b0111,'4':0b0111}
     def PATTERN(self,pat): # set outputs to bitstring pattern
-        if self.verbose:
-            print(self.name,'setting pattern',bin(pat))
-        for i in range(len(self.pins)):
-            if self.verbose:
-                print('','sending',pat & (1 << (11-i)),'to',self.pinsl[i])
-            GPIO.output(self.pinsl[i],pat & (1 << (11-i)))
-    def WRITE(self,character,digit): # display a character (valid characters in self.trans)
-        if self.verbose:
-            print(self.name,'writing',character,'to digit',digit)
+        if self.__verbose__:
+            print(self.__name__,'setting pattern',bin(pat))
+        for i in range(len(self.__pins__)):
+            if self.__verbose__:
+                print('','sending',pat & (1 << (11-i)),'to',self.__pinslist__[i])
+            GPIO.output(self.__pinslist__[i],pat & (1 << (11-i)))
+    def WRITE(self,character,digit): # display a character (valid characters in self.__trans__)
+        if self.__verbose__:
+            print(self.__name__,'writing',character,'to digit',digit)
         cw = 0
         for c in character:
-            cw = cw | self.trans[c] # add up character bitstrings
+            cw = cw | self.__trans__[c] # add up character bitstrings
         dw = 0
-        dw = self.digits[digit]
+        dw = self.__digits__[digit]
         w = cw | dw # combine into single bitstring
         self.PATTERN(w)
     def SET(self,segment,digit,signal=1): # set a specific segment to a specific signal
-        if self.verbose:
-            print(self.name,'setting segment',segment,'on digit',digit,'to',signal)
-        GPIO.output(self.pins[digit],signal)
-        GPIO.output(self.pins[segment],signal)
+        if self.__verbose__:
+            print(self.__name__,'setting segment',segment,'on digit',digit,'to',signal)
+        GPIO.output(self.__pins__[digit],signal)
+        GPIO.output(self.__pins__[segment],signal)
     def OFF(self): # set all segments to off
-        if self.verbose:
-            print(self.name,'turning all segments off')
+        if self.__verbose__:
+            print(self.__name__,'turning all segments off')
         self.PATTERN(0b111111111111)
     def DISPLAY(self,chars,duration=1,delay=.005):
         chars = chars.lower()
@@ -148,8 +146,8 @@ class MultiSegmentDisplay():
             elapsed += 4 * delay
         self.OFF()
     def SETCYCLE(self,chars): # sets the pattern for display cycling
-        if self.verbose:
-            print(self.name,'setting cycle pattern to',chars)
+        if self.__verbose__:
+            print(self.__name__,'setting cycle pattern to',chars)
         self.cyclechars = chars.lower()
     def CYCLE(self): # for looping use while running other code
         # call 4 times in a loop with Sleep(.005) after each call
@@ -164,8 +162,8 @@ class MultiSegmentDisplay():
 ##            Sleep(.005)
 ##            YourOtherFunctions()
 ##        # end while
-        if self.verbose:
-            print(self.name,'displaying',self.cyclechars,'on cycle',cycle)
+        if self.__verbose__:
+            print(self.__name__,'displaying',self.cyclechars,'on cycle',cycle)
         self.WRITE(self.cyclechars[self.cycle - 1],5 - self.cycle)
         if self.cycle < 4:
             self.cycle += 1

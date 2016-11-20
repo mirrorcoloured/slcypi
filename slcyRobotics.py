@@ -6,6 +6,7 @@ import slcypi.slcyMovement as Movement
 import slcypi.slcyDataStructures as DataStructures
 import slcypi.slcySensors as Sensors
 import slcypi.slcyPins as Pins
+import slcypi.slcyGeneral as General
 
 class UltraServo(Movement.Servo, Sensors.UltrasonicSensor):
     """Initialize with list of GPIO pins according to:
@@ -20,29 +21,15 @@ class UltraServo(Movement.Servo, Sensors.UltrasonicSensor):
     def __init__(self, pins, name='', verbose=False):
         self.__name__ = name
         self.__verbose__ = verbose
-        if type(pins) is dict:
-            self.pins = pins
-        elif type(pins) is list:
-            p = {}
-            c = ['trig','echo','serv']
-            i = 0
-            for i in range(0,len(c)):
-                p[c[i]] = pins[i]
-            self.pins = p
         if self.__verbose__:
             print('Initializing UltraServo',self.__name__,'...',end=' ')
-        self.__position__ = 3 # ensures the first move has enough time
-        self.__lastresult__ = 0
-        self.conversion = {'in':39.3701, 'inch':39.3701, 'inches':39.3701,
-                           'ft':3.28084, 'foot':3.28084, 'feet':3.28084,
-                           'cm':10, 'centimeters':10}
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(self.pins['serv'], GPIO.OUT)
-        self.__pwm__ = Pins.PWMPin(self.pins['serv'], freq=50, dutycycle=0, on=True)
-        GPIO.setup(self.pins['trig'], GPIO.OUT, initial=GPIO.LOW)
-        GPIO.setup(self.pins['echo'], GPIO.IN)
+        self.__pins__ = General.LoadPins(['trig','echo','serv'],pins)
+        self.__ultraservosetup__()
         if self.__verbose__:
             print('Done')
+    def __ultraservosetup__(self) -> None:
+        self.__servosetup__()
+        self.__ultrasonicsensorsetup__()
     # COMBINED FUNCTIONS
     def sweep(self, a, b, step) -> DataStructures.Dataset:
         """Takes a series of measurements across an angle range
