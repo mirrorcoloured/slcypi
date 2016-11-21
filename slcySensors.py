@@ -56,6 +56,17 @@ class UltrasonicSensor():
             self.__unit__ = self.__conversion__[unit]
         else:
             print('Invalid unit entered:',unit)
+    def continuousmeasure(self, interval, digits=4) -> DataStructures.Dataset:
+        d = DataStructures.Dataset()
+        try:
+            if self.__verbose__:
+                print(self.__name__,'measuring every',interval,'...')
+            while True:
+                d.append(self.measure(digits, True))
+                time.sleep(interval)
+        except KeyboardInterrupt:
+            self.__lastresult__ = d
+            return d
     def measure(self, digits=4, printimage=False) -> float:
         """---
         Returns a distance measurement
@@ -79,8 +90,14 @@ class UltrasonicSensor():
             self.__printimage__(r / self.__unit__)
         if self.__verbose__:
             print(self.__name__,'measured',r,self.__unitname__)
-        self.__lastresult__ = r
-        return r
+        d = self.__constructresult__(r)
+        self.__lastresult__ = d
+        return d
+    def __constructresult__(self,result) -> DataStructures.Dataset:
+        d = DataStructures.Dataset()
+        t = General.TimeString()
+        d.add(dist=result, time=t)
+        return d
     def multimeasure(self, interval=.1, totalmeasurements=None, totaltime=None, digits=4) -> DataStructures.Dataset:
         """Takes regular measurements, up to a max number or time, and returns a Dataset object
         interval <float>, time between each measurement
@@ -99,7 +116,7 @@ class UltrasonicSensor():
             tm = min(totaltime / interval, totalmeasurements)
         if self.__verbose__:
             print(self.__name__,'taking',tm,'measurements over',tm*interval,'seconds')
-        o = DataStructures.Dataset([]) # initialize Dataset
+        o = DataStructures.Dataset() # initialize Dataset
         while len(o) < tm: # until I have enough data points
             o.append(self.measure(digits))
             time.sleep(interval)

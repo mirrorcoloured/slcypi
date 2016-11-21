@@ -24,6 +24,11 @@ def Alert(channel) -> None:
     """Simple alert function for testing event interrupts"""
     print('Alert on channel',channel)
 
+def TimeString() -> str:
+    """Returns the current time"""
+    t = time.localtime()
+    return str(t[0])+'.'+str(t[1])+'.'+str(t[2])+'.'+str(t[3])+'.'+str(t[4])+'.'+str(t[5])
+
 def LoadPins(mapping,inp) -> dict:
     """Organizes an input into a pin mapping dict
     mapping <list>, ['IA','IB']

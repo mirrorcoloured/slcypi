@@ -28,6 +28,46 @@ class Servo():
         self.__pwm__ = Pins.PWMPin(self.__pins__['serv'], freq=50, dutycycle=0, on=True)
         self.__position__ = 1 # ensures the first move has enough time
         self.center() # initializes to center
+    def __linearsteps__(self, a, b, step, includeends=True) -> list:
+        """Generates a list of linear steps from a to b
+        a <float>
+        b <float>
+        step <float>
+        [includeends] <bool>
+        """
+        if (a < b and step > 0) or (a > b and step < 0):
+            o = []
+            rng = abs(b - a)
+            steps = int(rng / step) + 1
+            for i in range(steps):
+                o.append(a + i * step)
+            if includeends and o[len(o)-1] != b:
+                o.append(b)
+            return o
+        else:
+            print('Error, step and a -> b direction do not match')
+    def __searchsteps__(self, c, r, step, bounds=[-1,1]) -> list:
+        """Generates a list of steps centered at c going out r on either side
+        c <float>
+        r <float>
+        step <float>
+        [bounds] <list> of <float>
+        """
+        if bounds[0] <= c <= bounds[1] and r > 0:
+            o = []
+            plus = True
+            leftbound = max(bounds[0], c - r)
+            rightbound = min(bounds[1], c + r)
+            for i in range(1,int(r / step) + 1):
+                p = c + i * step
+                m = c - i * step
+                if leftbound <= p <= rightbound:
+                    o.append(p)
+                if leftbound <= m <= rightbound:
+                    o.append(m)
+            return o
+        else:
+            print('Error, invalid searchstep configuration')
     def __posmap__(self, value) -> float:
         """Returns a mapping transformation
         [-1,1] -> [1,10]
