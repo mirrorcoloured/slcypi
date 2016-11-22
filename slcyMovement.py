@@ -94,11 +94,8 @@ class Servo():
             if self.__verbose__:
                 print(self.__name__,'moving to position',target,'...',end='')
             dt = abs(self.__position__ - target) * .3
-            print('dt',dt)
             self.__pwm__.setdutycycle(self.__posmap__(target))
-            print('sleeping')
             time.sleep(dt)
-            print('waking')
             self.__pwm__.setdutycycle(0)
             self.__position__ = target
             if self.__verbose__:

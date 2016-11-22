@@ -51,7 +51,7 @@ class UltraServo(Movement.Servo, Sensors.UltrasonicSensor):
             self.__lastresult__ = r
             return r
     def __constructresult__(self,result) -> DataStructures.Dataset:
-        d = DataStructures.Dataset()
+        d = DataStructures.Dataset([])
         t = General.TimeString()
         p = self.__position__
         d.add(dist=result, time=t, pos=p)
@@ -80,51 +80,39 @@ class UltraServo(Movement.Servo, Sensors.UltrasonicSensor):
         self.__lastresult__ = r
         return r
     def followme(self) -> None:
+        self.__following__ = True
+        self.__scan__()
+    def __scan__(self) -> None:
         try:
-            if self.__verbose__:
+            if self.__following__:
                 print(self.__name__,'starting following routine')
-            scanstep = .1 # rotation resolution
-            scan = self.sweep(-1,1,scanstep) # initial scan of surroundings
-            #scan.removeitems('dist':'>30') # remove timeout values
-            closest = scan.min('dist') # find closest measurement
-            aim = closest['pos'] # get position of target
-            rng = closest['dist'] # get distance to target
-            self.move(aim) # move to position
-            if self.__verbose__:
+                scanstep = .05 # rotation resolution
+                maxdist = 2 #
+                scan = self.sweep(-1,1,scanstep) # initial scan of surroundings
+                #scan.removeitems(dist='>'+str(maxdist)) # remove timeout values
+                closest = scan.min('dist') # find closest measurement
+                aim = closest['pos'] # get position of target
+                rng = closest['dist'] # get distance to target
+                self.move(aim) # move to position
                 print(self.__name__,'following target at position',aim,'and distance',rng)
-            self.__follow__(aim,rng) # enter follow mode
+                self.__track__(aim, rng) # enter follow mode
         except KeyboardInterrupt:
-            if self.__verbose__:
-                print(self.__name__,'exiting follow routine')
-    def __follow__(self, pos, dist) -> None:
+            self.__stopfollowing__()
+    def __track__(self, pos, dist) -> None:
         try:
-            depthvar = 1 # depth change tolerance
-            while True:
-                m = self.measure()[0] # get a single measurement
-                if abs(m['dist'] - dist) < depthvar: # if distance hasn't changed much
-                    dist = m['dist'] # update range
-                    if self.__verbose__:
-                        print(self.__name__,'target in sights, distance',dist)
-                else: # distance has changed greatly
-                    if self.__verbose__:
-                        print(self.__name__,'target lost, tracking nearby')
-                    self.__track__(pos, dist, depthvar)
-            except KeyboardInterrupt:
-            if self.__verbose__:
-                print(self.__name__,'exiting follow routine')
-    def __track__(self, pos, dist, depthvar) -> None:
-        try:
-            trackstep = .1 # rotation resolution
-            tracklimit = .5 # how far to look from last known position
-            x = self.__searchsteps__(pos, tracklimit, trackstep) # generate local search positions
-            for p in x:
-                self.move(p) # move to a nearby position
-                m = self.measure()[0] # get a single measurement
-                if abs(m['dist'] - dist) < depthvar: # found it again
-                    self.__follow(m['pos'], m['dist']) # go back to following
-            if self.__verbose__:
+            if self.__following__:
+                trackstep = .05 # rotation resolution
+                tracklimit = .5 # how far to look from last known position
+                x = self.__searchsteps__(pos, tracklimit, trackstep) # generate local search positions
+                for p in x:
+                    self.move(p) # move to a nearby position
+                    m = self.measure().list[0] # get a single measurement
+                    if abs(m['dist']) > dist: # found it again
+                        self.__track__(m['pos'], m['dist']) # go back to following
                 print(self.__name__,'target not found nearby, restarting wide scan')
-            self.followme() # target not found nearby, restart wide scan
+                self.__scan__() # target not found nearby, restart wide scan
         except KeyboardInterrupt:
-            if self.__verbose__:
-                print(self.__name__,'exiting follow routine')
+            self.__stopfollowing__()
+    def __stopfollowing__(self) -> None:
+        print(self.__name__,'exiting follow routine')
+        self.__following__ = False

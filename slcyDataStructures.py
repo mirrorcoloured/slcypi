@@ -12,13 +12,22 @@ class Dataset():
         if self.len() > 0:
             return len(self.list[0])
     def max(self,key) -> float:
-        """Returns the maximum value of the selected key
+        """Returns the entry with the maximum value of the selected key
         """
-        return max(self.sublist(key))
+        o = self.list[0]
+        for i in self.list:
+            if i[key] > o[key]:
+                o = i
+        return o
     def min(self,key) -> float:
-        """Returns the minimum value of the selected key
+        """Returns the entry with the minimum value of the selected key
         """
-        return min(self.sublist(key))
+        o = self.list[0]
+        for i in self.list:
+            if i[key] < o[key]:
+                o = i
+        return o
+        #return min(self.sublist(key))
     def mean(self,key) -> float:
         """Returns the mean value of the selected key
         """
@@ -37,6 +46,12 @@ class Dataset():
         sd = var ** (1/2)
         self.__sd__ = sd
         self.addcalc(key + '_sd', key, '(', '-' + str(mean) + ')/' + str(sd))
+    def calcdelta(self, key) -> None:
+        """Adds delta calculation of specified key
+        delta = abs(value - mean)
+        """
+        mean = self.mean(key)
+        self.addcalc(key + '_delta', key, 'abs(', '-' + str(mean) + ')')
     def renamekey(self, oldkey, newkey) -> None:
         """Renames a key
         ex.renamekey('time', 't')
@@ -66,19 +81,18 @@ class Dataset():
         ex.append({'time':2, 'loc':52})
         Accepts other Dataset objects, dict objects, or lists of dict objects
         """
-        try: # assume another Dataset
+        if type(data) is Dataset:
             self.append(data.list)
-        except:
-            if type(data) is dict:
-                self.list.append(data)
-            elif type(data) is list:
-                for i in data:
-                    self.list.append(i)
-            else:
-                print('Invalid data type supplied. Accepts Dataset, dict, or list of dicts.')
+        elif type(data) is list:
+            for i in data:
+                self.list.append(i)
+        elif type(data) is dict:
+            self.list.append(data)
+        else:
+            print('Invalid data type supplied. Accepts Dataset, dict, or list of dicts.')
     def removeitems(self, **conditions) -> None:
         """Removes data elements from the set meeting criteria
-        ex.remove(time='>1', 'loc':'==50')
+        ex.remove(time='>1', 'loc'='==50')
         Multiple conditions are AND gated, call function again for OR usage
         """
         for i in self.list:
@@ -114,6 +128,9 @@ class Dataset():
         for i in self.list:
             o.append(i[key])
         return o
+    def getkeys(self) -> list:
+        """Returns a list of keys in the set"""
+        return list(self.list[0].keys())
     def print(self, *keys) -> None:
         """Prints the contents of the dataset, optionally only certain keys
         ex.print('time')

@@ -57,7 +57,7 @@ class UltrasonicSensor():
         else:
             print('Invalid unit entered:',unit)
     def continuousmeasure(self, interval, digits=4) -> DataStructures.Dataset:
-        d = DataStructures.Dataset()
+        d = DataStructures.Dataset([])
         try:
             if self.__verbose__:
                 print(self.__name__,'measuring every',interval,'...')
@@ -94,7 +94,7 @@ class UltrasonicSensor():
         self.__lastresult__ = d
         return d
     def __constructresult__(self,result) -> DataStructures.Dataset:
-        d = DataStructures.Dataset()
+        d = DataStructures.Dataset([])
         t = General.TimeString()
         d.add(dist=result, time=t)
         return d
