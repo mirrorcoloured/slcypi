@@ -8,12 +8,11 @@ class Servo():
     """Initialize with control pin
     pins <dict>, <list>, <int>, {'serv':1}
     [name] <str>, identify this sensor
-    [verbose] <bool>, print every action
-    """
+    [verbose] <bool>, print every action"""
     # RED       VCC     5 V
     # BROWN     GND     0 V
     # ORANGE    CTRL    GPIO
-    def __init__(self, pins, name='', verbose=False):
+    def __init__(self, pins, name='', verbose=False) -> None:
         self.__name__ = name
         self.__verbose__ = verbose
         if self.__verbose__:
@@ -33,8 +32,7 @@ class Servo():
         a <float>
         b <float>
         step <float>
-        [includeends] <bool>
-        """
+        [includeends] <bool>"""
         if (a < b and step > 0) or (a > b and step < 0):
             o = []
             rng = abs(b - a)
@@ -51,8 +49,7 @@ class Servo():
         c <float>
         r <float>
         step <float>
-        [bounds] <list> of <float>
-        """
+        [bounds] <list> of <float>"""
         if bounds[0] <= c <= bounds[1] and r > 0:
             o = []
             plus = True
@@ -70,8 +67,7 @@ class Servo():
             print('Error, invalid searchstep configuration')
     def __posmap__(self, value) -> float:
         """Returns a mapping transformation
-        [-1,1] -> [1,10]
-        """
+        [-1,1] -> [1,10]"""
         # dx = 2 # -1 to 1
         # dy = 9 # 1 to 10
         # ox = 1 # -1 -> 0
@@ -82,14 +78,11 @@ class Servo():
         """Checks if a value is between -1 and 1"""
         return value >= -1 and value <= 1
     def getpos(self) -> float:
-        """Returns the servo position (Between -1 and 1)
-        """
+        """Returns the servo position (Between -1 and 1)"""
         return self.__position__
     def move(self, target) -> None:
         """Moves to a specified position
-        ---
-        position <float>, [-1,1] left to right
-        """
+        position <float>, [-1,1] left to right"""
         if self.__inrange__(target):
             if self.__verbose__:
                 print(self.__name__,'moving to position',target,'...',end='')
@@ -134,14 +127,13 @@ class DCMotor():
     direction <int>, 1 forward, -1 backward
     speed <int>, [0:100]
     [name] <str>, identify this sensor
-    [verbose] <bool>, print every action
-    """
+    [verbose] <bool>, print every action"""
 #   OA |-\/-| GND
 #  VCC |    | IB
 #  VCC |    | IA
 #   OB |----| GND
 # VCC accepts 2.5 - 12 V
-    def __init__(self, pins, direction=1, speed=50, on=True, name = '', verbose=False):
+    def __init__(self, pins, direction=1, speed=50, on=True, name = '', verbose=False) -> None:
         self.__name__ = name
         self.__verbose__ = verbose
         if self.__verbose__:
@@ -154,11 +146,12 @@ class DCMotor():
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.__pins__['IA'], GPIO.OUT, initial=0)
         GPIO.setup(self.__pins__['IB'], GPIO.OUT, initial=0)
-        self.__pwm__ = PWMPin(self.__pins__['IA'],2000,self.__speed__)
+        self.__pwm__ = PWMPin(self.__pins__['IA'],2000, self.__speed__)
         self.__direction__ = direction
         self.__speed__ = speed
         self.__running__ = on
-    def start(self):
+    def on(self) -> None:
+        """Turns the motor on"""
         if self.__verbose__:
             print(self.__name__,'starting up')
         self.__running__ = True
@@ -166,35 +159,43 @@ class DCMotor():
             self.forward()
         else:
             self.backward()
-    def stop(self):
+    def off(self) -> None:
+        """Turns the motor off"""
         if self.__verbose__:
             print(self.__name__,'stopping')
         self.__running__ = False
         GPIO.output(self.__pins__['IA'], 0)
         GPIO.output(self.__pins__['IB'], 0)
         self.__pwm__.off()
-    def power(self):
+    def power(self) -> bool:
+        """Toggles the motor on/off
+        Returns whether motor is now running"""
         if self.__verbose__:
             print(self.__name__,'toggling power')
         if self.__running__:
-            self.stop()
+            self.off()
+            return self.isrunning()
         else:
-            self.start()
-    def forward(self):
+            self.on()
+            return True
+    def forward(self) -> None:
+        """Runs motor forward"""
         if self.__verbose__:
             print(self.__name__,'going forward')
         self.__direction__ = 1
         GPIO.output(self.__pins__['IA'], 1)
         GPIO.output(self.__pins__['IB'], 0)
         self.__pwm__.on()
-    def backward(self):
+    def backward(self) -> None:
+        """Runs motor backward"""
         if self.__verbose__:
             print(self.__name__,'going backward')
         self.__direction__ = 0
         GPIO.output(self.__pins__['IA'], 0)
         GPIO.output(self.__pins__['IB'], 1)
         self.__pwm__.on()
-    def reverse(self):
+    def reverse(self) -> None:
+        """Reverses the direction of the motor"""
         if self.__verbose__:
             print(self.__name__,'toggling direction')
         if self.__running__:
@@ -207,7 +208,9 @@ class DCMotor():
                 self.__direction__ = 0
             else:
                 self.__direction__ = 1
-    def setspeed(self,speed=50):
+    def setspeed(self,speed=50) -> None:
+        """Sets the speed of the motor
+        speed <int>, [0:100]"""
         if self.__verbose__:
             print(self.__name__,'setting speed to',speed)
         self.__speed__ = speed
@@ -216,8 +219,11 @@ class DCMotor():
         else:
             self.__pwm__.setdutycycle(100 - self.__speed__)
     def getspeed(self) -> float:
+        """Returns the current speed"""
         return self.__speed__
     def getdirection(self) -> int:
+        """Returns the direction of rotation {backward:0, forward:1}"""
         return self.__direction__
     def isrunning(self) -> bool:
+        """Returns whether the motor is running"""
         return self.__running__

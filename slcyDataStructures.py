@@ -1,36 +1,33 @@
 class Dataset():
     """List of dicts containing any desired keys
-    ex = Dataset([{'time':0,'loc':45}, {'time':1,'loc':48}])
-    """
+    ex = Dataset([{'time':0,'loc':45}, {'time':1,'loc':48}])"""
     def __init__(self, datalist=[]) -> None: # init with list of dicts
         self.list = datalist
     def len(self) -> int:
+        """Returns the number of data entries"""
         return len(self.list)
     def __len__(self) -> int: # overload len() function
         return self.len()
     def dim(self) -> int:
+        """Returns the number of keys in the first data entry"""
         if self.len() > 0:
             return len(self.list[0])
     def max(self,key) -> float:
-        """Returns the entry with the maximum value of the selected key
-        """
+        """Returns the entry with the maximum value of the selected key"""
         o = self.list[0]
         for i in self.list:
             if i[key] > o[key]:
                 o = i
         return o
     def min(self,key) -> float:
-        """Returns the entry with the minimum value of the selected key
-        """
+        """Returns the entry with the minimum value of the selected key"""
         o = self.list[0]
         for i in self.list:
             if i[key] < o[key]:
                 o = i
         return o
-        #return min(self.sublist(key))
     def mean(self,key) -> float:
-        """Returns the mean value of the selected key
-        """
+        """Returns the mean value of the selected key"""
         s = self.sublist(key)
         return sum(s) / len(s)
     def calcsd(self, key) -> None:
@@ -54,8 +51,7 @@ class Dataset():
         self.addcalc(key + '_delta', key, 'abs(', '-' + str(mean) + ')')
     def renamekey(self, oldkey, newkey) -> None:
         """Renames a key
-        ex.renamekey('time', 't')
-        """
+        ex.renamekey('time', 't')"""
         for i in self.list:
             i[newkey] = i[oldkey]
             i.pop(oldkey)
@@ -67,20 +63,17 @@ class Dataset():
         return c
     def add(self, **data) -> None:
         """Adds a data element to the set
-        ex.add(time = 2, loc = 52)
-        """
+        ex.add(time = 2, loc = 52)"""
         self.list.append(data)
     def addcalc(self, newkey, oldkey, precalc='', postcalc='') -> None:
         """Adds a key to existing items based on existing keys
-        ex.addcalc('tplusonesquared', 't', '+1)**2', '(')
-        """
+        ex.addcalc('tplusonesquared', 't', '+1)**2', '(')"""
         for i in self.list:
             i[newkey] = eval(precalc+str(i[oldkey])+postcalc)
     def append(self, data) -> None:
         """Appends data to the set
         ex.append({'time':2, 'loc':52})
-        Accepts other Dataset objects, dict objects, or lists of dict objects
-        """
+        Accepts other Dataset objects, dict objects, or lists of dict objects"""
         if type(data) is Dataset:
             self.append(data.list)
         elif type(data) is list:
@@ -93,8 +86,7 @@ class Dataset():
     def removeitems(self, **conditions) -> None:
         """Removes data elements from the set meeting criteria
         ex.remove(time='>1', 'loc'='==50')
-        Multiple conditions are AND gated, call function again for OR usage
-        """
+        Multiple conditions are AND gated, call function again for OR usage"""
         for i in self.list:
             for c in conditions:
                 rem = False
@@ -104,15 +96,13 @@ class Dataset():
                 self.list.remove(i)
     def removekeys(self, *keys) -> None:
         """Removes specified keys from data elements
-        ex.remove('time')
-        """
+        ex.remove('time')"""
         for k in keys:
             for i in self.list:
                 i.pop(k)
     def subset(self, *keys) -> 'Dataset':
         """Returns a subset of this dataset containing the requested keys
-        locs = ex.subset('loc')
-        """
+        locs = ex.subset('loc')"""
         o = []
         for i in self.list:
             d = {}
@@ -122,8 +112,7 @@ class Dataset():
         return Dataset(o)
     def sublist(self, key) -> list:
         """Returns a list of the requested key values
-        locs = ex.subset('loc')
-        """
+        locs = ex.subset('loc')"""
         o = []
         for i in self.list:
             o.append(i[key])
@@ -133,8 +122,7 @@ class Dataset():
         return list(self.list[0].keys())
     def print(self, *keys) -> None:
         """Prints the contents of the dataset, optionally only certain keys
-        ex.print('time')
-        """
+        ex.print('time')"""
         if len(keys) > 0:
             for i in self.list:
                 firstkey = True

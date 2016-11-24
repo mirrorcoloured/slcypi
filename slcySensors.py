@@ -39,13 +39,16 @@ class UltrasonicSensor():
         """Returns the last measured result
         """
         return self.__lastresult__
-    def __printimage__(self,dist) -> None:
-        dist = int(dist)
+    def __printimage__(self,dist,maxdist=30) -> None:
+        if dist > 30:
+            scaleddist = 0
+        else:
+            scaleddist = int(dist * 30 / maxdist)
         o = '|O'
-        for i in range(dist):
+        for i in range(scaleddist):
             o += ' '
         o += 'X'
-        print(o)
+        print(dist,'\t',o)
     def setunit(self, unit='m') -> None:
         """Sets the measurement unit:
         unit <str>,  m  cm  in  ft
@@ -56,18 +59,18 @@ class UltrasonicSensor():
             self.__unit__ = self.__conversion__[unit]
         else:
             print('Invalid unit entered:',unit)
-    def continuousmeasure(self, interval, digits=4) -> DataStructures.Dataset:
+    def continuousmeasure(self, interval, digits=4, imagemaxdist=30) -> DataStructures.Dataset:
         d = DataStructures.Dataset([])
         try:
             if self.__verbose__:
                 print(self.__name__,'measuring every',interval,'...')
             while True:
-                d.append(self.measure(digits, True))
+                d.append(self.measure(digits, True, imagemaxdist))
                 time.sleep(interval)
         except KeyboardInterrupt:
             self.__lastresult__ = d
             return d
-    def measure(self, digits=4, printimage=False) -> float:
+    def measure(self, digits=4, printimage=False, imagemaxdist=30) -> float:
         """---
         Returns a distance measurement
         Takes < 0.02 s to resolve
@@ -87,7 +90,7 @@ class UltrasonicSensor():
         t2 = time.time()
         r = round((t2-t1) * 340 / 2, digits) * self.__unit__
         if printimage:
-            self.__printimage__(r / self.__unit__)
+            self.__printimage__(r / self.__unit__, imagemaxdist)
         if self.__verbose__:
             print(self.__name__,'measured',r,self.__unitname__)
         d = self.__constructresult__(r)
