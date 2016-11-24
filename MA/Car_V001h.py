@@ -11,6 +11,10 @@ from time import sleep
 from PIL import Image
 from pylab import *
 
+sys.path.append("/home/pi/Adafruit-Motor-HAT-Python-Library") ### ADD PATH
+from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor
+
+
 # Pygame and camera initialize
 pygame.init()
 pygame.display.set_caption('My Robot')
@@ -22,8 +26,8 @@ cam.start()
 
 # create a default object, no changes to I2C address or frequency
 mh = Adafruit_MotorHAT(addr=0x60)
-driveMotor = mh.getMotor(1)
-steerMotor = mh.getMotor(2)
+leftMotor = mh.getMotor(1)
+rightMotor = mh.getMotor(2)
 
 # Method to relase all motors
 def turnOffMotors():
@@ -32,55 +36,47 @@ def turnOffMotors():
         mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
         mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
 
-# Method to change speed
-def changeSpeed(change):
-        global currentSpeed
-        print "changeSpeed"
-        newSpeed = currentSpeed + change
-        print newSpeed
-        if newSpeed > 0:
-                driveMotor.run(Adafruit_MotorHAT.FORWARD)
-        else:
-                driveMotor.run(Adafruit_MotorHAT.BACKWARD)
-
-        absStart = abs(currentSpeed)
-        absEnd = abs(newSpeed)
-
-        print absStart
-        print absEnd
-        if absStart > absEnd:
-                for i in range(absStart, absEnd, -10):
-                        driveMotor.setSpeed(i)
-                        time.sleep(0.01)
-        else:
-                for i in range(absStart, absEnd, 10):
-                        driveMotor.setSpeed(i)
-                        time.sleep(0.01)
-        currentSpeed = newSpeed
-
-# Method to drive
-def drive(direction):
+def drive(self,direction, speed=100) -> None:
+        """Method control forward speed
+        direction <integer> {-1,0,1}
+        speed <integer> {0:255}"""
         if direction == 1:
-                driveMotor.run(Adafruit_MotorHAT.FORWARD)
-                driveMotor.setSpeed(100)
+                leftMotor.run(Adafruit_MotorHAT.FORWARD)
+                rightMotor.run(Adafruit_MotorHAT.FORWARD)
+                leftMotor.setSpeed(speed)
+                rightMotor.setSpeed(speed)
         if direction == -1:
-                driveMotor.run(Adafruit_MotorHAT.BACKWARD)
-                driveMotor.setSpeed(100)
+                leftMotor.run(Adafruit_MotorHAT.BACKWARD)
+                rightMotor.run(Adafruit_MotorHAT.BACKWARD)
+                leftMotor.setSpeed(speed)
+                rightMotor.setSpeed(speed)
         if direction == 0:
-                driveMotor.setSpeed(0)
-                driveMotor.run(Adafruit_MotorHAT.RELEASE)
+                leftMotor.setSpeed(0)
+                rightMotor.setSpeed(0)
+                leftMotor.run(Adafruit_MotorHAT.RELEASE)
+                rightMotor.run(Adafruit_MotorHAT.RELEASE)
 
-# Method to steer
-def steer(direction):
+def rotate(self,direction, speed=30):
+        """Method to control steering
+        direction <integer> {-1,0,1}
+        speed <integer>"""
         if direction == 1:
-                steerMotor.run(Adafruit_MotorHAT.FORWARD)
-                steerMotor.setSpeed(255)
+                leftMotor.run(Adafruit_MotorHAT.FORWARD)
+                rightMotor.run(Adafruit_MotorHAT.BACKWARD)
+                leftMotor.setSpeed(speed)
+                rightMotor.setSpeed(speed)
         if direction == -1:
-                steerMotor.run(Adafruit_MotorHAT.BACKWARD)
-                steerMotor.setSpeed(255)
+                leftMotor.run(Adafruit_MotorHAT.BACKWARD)
+                rightMotor.run(Adafruit_MotorHAT.FORWARD)
+                leftMotor.setSpeed(speed)
+                rightMotor.setSpeed(speed)
         if direction == 0:
-                steerMotor.setSpeed(0)
-                steerMotor.run(Adafruit_MotorHAT.RELEASE)
+                leftMotor.setSpeed(0)
+                rightMotor.setSpeed(0)
+                leftMotor.run(Adafruit_MotorHAT.RELEASE)
+                rightMotor.run(Adafruit_MotorHAT.RELEASE)
+
+
 
 # Method to convert pixel int to RGB values
 def getRGB(pixelInt):
@@ -186,26 +182,24 @@ try:
                 #print "Direction: " + direction
 
                 # Redirect based on direction
-                steer(direction)
+                #rotate(direction)
 
                 # User events
                 for event in pygame.event.get():
                         if event.type == pygame.KEYDOWN:
                                 if event.key == (pygame.K_UP):
-                                        #changeSpeed(50)
                                         drive(1)
                                         print "up"
                                 if event.key == (pygame.K_DOWN):
-                                        #changeSpeed(-50)
                                         drive(-1)
                                         print "down"
                                 if (event.key == pygame.K_ESCAPE):
                                         done = True
                                 if (event.key == pygame.K_LEFT):
-                                        steer(1)
+                                        rotate(1)
                                         print "left"
                                 if (event.key == pygame.K_RIGHT):
-                                        steer(-1)
+                                        rotate(-1)
                                         print "right"
 
                         if event.type == pygame.KEYUP:
@@ -216,10 +210,10 @@ try:
                                         drive(0)
                                         print "down release"
                                 if (event.key == pygame.K_LEFT):
-                                        steer(0)
+                                        rotate(0)
                                         print "left release"
                                 if (event.key == pygame.K_RIGHT):
-                                        steer(0)
+                                        rotate(0)
                                         print "right release"
 
 except KeyboardInterrupt:
@@ -228,7 +222,7 @@ except KeyboardInterrupt:
 cam.stop()
 pygame.quit()
 
-steerMotor.setSpeed(0)
-steerMotor.run(Adafruit_MotorHAT.RELEASE)
-driveMotor.setSpeed(0)
-driveMotor.run(Adafruit_MotorHAT.RELEASE)
+leftMotor.setSpeed(0)
+leftMotor.run(Adafruit_MotorHAT.RELEASE)
+rightMotor.setSpeed(0)
+rightMotor.run(Adafruit_MotorHAT.RELEASE)
