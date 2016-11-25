@@ -24,3 +24,5 @@ myMotor.setSpeed(50)
 time.sleep(0.5)
 myMotor.setSpeed(50)
 myMotor.run(Adafruit_MotorHAT.RELEASE)
+
+print("Success")

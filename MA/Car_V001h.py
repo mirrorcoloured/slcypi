@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor
+#from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor
 
 import time
 import atexit
@@ -26,8 +26,8 @@ cam.start()
 
 # create a default object, no changes to I2C address or frequency
 mh = Adafruit_MotorHAT(addr=0x60)
-leftMotor = mh.getMotor(1)
-rightMotor = mh.getMotor(2)
+rightMotor = mh.getMotor(1)
+leftMotor = mh.getMotor(2)
 
 # Method to relase all motors
 def turnOffMotors():
@@ -36,17 +36,17 @@ def turnOffMotors():
         mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
         mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
 
-def drive(self,direction, speed=100) -> None:
+def drive(direction, speed=200):
         """Method control forward speed
         direction <integer> {-1,0,1}
         speed <integer> {0:255}"""
         if direction == 1:
-                leftMotor.run(Adafruit_MotorHAT.FORWARD)
+                leftMotor.run(Adafruit_MotorHAT.BACKWARD)
                 rightMotor.run(Adafruit_MotorHAT.FORWARD)
                 leftMotor.setSpeed(speed)
                 rightMotor.setSpeed(speed)
         if direction == -1:
-                leftMotor.run(Adafruit_MotorHAT.BACKWARD)
+                leftMotor.run(Adafruit_MotorHAT.FORWARD)
                 rightMotor.run(Adafruit_MotorHAT.BACKWARD)
                 leftMotor.setSpeed(speed)
                 rightMotor.setSpeed(speed)
@@ -56,17 +56,17 @@ def drive(self,direction, speed=100) -> None:
                 leftMotor.run(Adafruit_MotorHAT.RELEASE)
                 rightMotor.run(Adafruit_MotorHAT.RELEASE)
 
-def rotate(self,direction, speed=30):
+def rotate(direction, speed=50):
         """Method to control steering
         direction <integer> {-1,0,1}
         speed <integer>"""
         if direction == 1:
-                leftMotor.run(Adafruit_MotorHAT.FORWARD)
+                leftMotor.run(Adafruit_MotorHAT.BACKWARD)
                 rightMotor.run(Adafruit_MotorHAT.BACKWARD)
                 leftMotor.setSpeed(speed)
                 rightMotor.setSpeed(speed)
         if direction == -1:
-                leftMotor.run(Adafruit_MotorHAT.BACKWARD)
+                leftMotor.run(Adafruit_MotorHAT.FORWARD)
                 rightMotor.run(Adafruit_MotorHAT.FORWARD)
                 leftMotor.setSpeed(speed)
                 rightMotor.setSpeed(speed)
@@ -169,7 +169,7 @@ try:
                 # Camera
                 image1 = cam.get_image()
                 image1 = pygame.transform.scale(image1,(640,480))
-                #image1 = pygame.transform.flip(image1,1,1)
+                image1 = pygame.transform.flip(image1,1,1)
                 screen.blit(image1,(0,0))
                 pygame.display.update()
 

@@ -1,6 +1,11 @@
+import sys
 from time import sleep
 
-import MA.Tank as tank
+sys.path.append("/home/pi/Documents/Robots/slcypi/MA") ### ADD PATH
+
+
+#from MA.Tank import Tank
+import Tank
 
 myRobot = tank.Tank()
 
