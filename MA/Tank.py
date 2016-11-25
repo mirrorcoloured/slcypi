@@ -40,7 +40,7 @@ class Tank():
         rightReverse <boolean>"""
         self.leftRightSwap = leftRightSwap
         self.leftReverse = leftReverse
-        self.rightReverse = rightRevese
+        self.rightReverse = rightReverse
         
     def turnOffMotors(self):
         """Method to turn off all motors"""
@@ -77,7 +77,7 @@ class Tank():
         """Method to control steering
         direction <integer> {-1,0,1}
         speed <integer>"""
-        if direction == 1:
+        if direction == 1:                
                 self.leftMotor.run(Adafruit_MotorHAT.FORWARD)
                 self.rightMotor.run(Adafruit_MotorHAT.BACKWARD)
                 self.leftMotor.setSpeed(speed)
@@ -98,6 +98,7 @@ class Tank():
         direction <integer> {-1,0,1}
         speed <integer> {0:255}"""
         if direction == 1:
+                print("Drive sync 1")
                 self.driveSpeed = speed               
         if direction == -1:
                 self.driveSpeed = -speed
@@ -109,15 +110,16 @@ class Tank():
         """Method to control steering
         direction <integer> {-1,0,1}
         speed <integer>"""
-        if direction == 1:
+        if direction == 1:                
                 self.rotateSpeed = speed
         if direction == -1:
                 self.rotateSpeed = -speed
         if direction == 0:
                 self.rotateSpeed = 0
-        self.setSpeeds
+        self.setSpeeds()
 
     def setSpeeds(self):
+        print("Set Speeds")
         self.leftSpeed = self.driveSpeed + self.rotateSpeed
         self.rightSpeed = self.driveSpeed - self.rotateSpeed
 
