@@ -103,6 +103,7 @@ class Tank():
                 self.driveSpeed = -speed
         if direction == 0:
                 self.diveSpeed = 0
+        self.setSpeeds
 
     def rotateSync(self,direction, speed=50):
         """Method to control steering
@@ -114,6 +115,7 @@ class Tank():
                 self.rotateSpeed = -speed
         if direction == 0:
                 self.rotateSpeed = 0
+        self.setSpeeds
 
     def setSpeeds(self):
         self.leftSpeed = self.driveSpeed + self.rotateSpeed
