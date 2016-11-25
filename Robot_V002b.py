@@ -23,6 +23,7 @@ cam = pygame.camera.Camera(cam_list[0],(320,240))
 cam.start()
 
 robot = Tank()
+robot.correctDirections(False,False,False)
 
 try:
         print('starting loop')
@@ -40,24 +41,24 @@ try:
                 for event in pygame.event.get():
                         if event.type == pygame.KEYDOWN:
                                 if event.key == (pygame.K_UP):
-                                        robot.drive(1)
+                                        robot.driveSync(1)
                                 if event.key == (pygame.K_DOWN):
-                                        robot.drive(-1)
+                                        robot.driveSync(-1)
                                 if (event.key == pygame.K_ESCAPE):
                                         done = True
                                 if (event.key == pygame.K_LEFT):
-                                        robot.rotate(1)
+                                        robot.rotateSync(1)
                                 if (event.key == pygame.K_RIGHT):
-                                        robot.rotate(-1)
+                                        robot.rotateSync(-1)
                         if event.type == pygame.KEYUP:
                                 if event.key == (pygame.K_UP):
-                                        robot.drive(0)
+                                        robot.driveSync(0)
                                 if event.key == (pygame.K_DOWN):
-                                        robot.drive(0)
+                                        robot.driveSync(0)
                                 if (event.key == pygame.K_LEFT):
-                                        robot.rotate(0)
+                                        robot.rotateSync(0)
                                 if (event.key == pygame.K_RIGHT):
-                                        robot.rotate(0)
+                                        robot.rotateSync(0)
 
 except KeyboardInterrupt:
         pygame.quit()
