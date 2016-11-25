@@ -51,7 +51,7 @@ class Tank():
                 self.leftMotor.run(Adafruit_MotorHAT.RELEASE)
                 self.rightMotor.run(Adafruit_MotorHAT.RELEASE)
 
-    def rotate(self,direction, speed=30):
+    def rotate(self,direction, speed=100):
         """Method to control steering
         direction <integer> {-1,0,1}
         speed <integer>"""
