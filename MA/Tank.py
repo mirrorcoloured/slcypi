@@ -11,14 +11,14 @@ class Tank():
 
     def __init__(self) -> None:
         """Initialize method"""
-        mh = Adafruit_MotorHAT(addr=0x60)
-        self.leftMotor = mh.getMotor(1)
-        self.rightMotor = mh.getMotor(2)
+        self.mh = Adafruit_MotorHAT(addr=0x60)
+        self.leftMotor = self.mh.getMotor(1)
+        self.rightMotor = self.mh.getMotor(2)
         #atexit.register(turnOffMotors)
-        mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
-        mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
-        mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
-        mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
+        self.mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
+        self.mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
+        self.mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
+        self.mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
 
         # Variables related to sync drive
         self.driveSpeed = 0
@@ -44,10 +44,10 @@ class Tank():
         
     def turnOffMotors(self):
         """Method to turn off all motors"""
-        mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
-        mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
-        mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
-        mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
+        self.mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
+        self.mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
+        self.mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
+        self.mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
 
     def stop(self) -> None:
         """Method to stop driving"""
@@ -103,8 +103,8 @@ class Tank():
         if direction == -1:
                 self.driveSpeed = -speed
         if direction == 0:
-                self.diveSpeed = 0
-        self.setSpeeds
+                self.driveSpeed = 0
+        self.setSpeeds()
 
     def rotateSync(self,direction, speed=50):
         """Method to control steering
@@ -120,8 +120,8 @@ class Tank():
 
     def setSpeeds(self):
         print("Set Speeds")
-        self.leftSpeed = self.driveSpeed + self.rotateSpeed
-        self.rightSpeed = self.driveSpeed - self.rotateSpeed
+        self.leftSpeed = self.driveSpeed - self.rotateSpeed
+        self.rightSpeed = self.driveSpeed + self.rotateSpeed
 
         # Adjust for directions
         if self.leftRightSwap == False:
@@ -134,31 +134,31 @@ class Tank():
         if self.leftReverse == True:
                 self.actualLeftSpeed = self.actualLeftSpeed * -1
 
-        if self.rightReverse == TRUE: 
+        if self.rightReverse == True: 
                 self.actualRightSpeed = self.actualRightSpeed * -1
 
         # Left motor
-        if self.actualLeftMotor == 0:
+        if self.actualLeftSpeed == 0:
                 self.leftMotor.setSpeed(0)
                 self.leftMotor.run(Adafruit_MotorHAT.RELEASE)
         else: 
-            if self.actualLeftMotor > 0:
+            if self.actualLeftSpeed > 0:
                 self.leftMotor.run(Adafruit_MotorHAT.FORWARD)
-                self.leftMotor.setSpeed(self.actualLeftMotor)
+                self.leftMotor.setSpeed(self.actualLeftSpeed)
             else:
                 self.leftMotor.run(Adafruit_MotorHAT.BACKWARD)
-                self.leftMotor.setSpeed(abs(self.actualLeftMotor))        
+                self.leftMotor.setSpeed(abs(self.actualLeftSpeed))        
                 
         # Right motor
-        if self.actualRightMotor == 0:
+        if self.actualRightSpeed == 0:
                 self.rightMotor.setSpeed(0)
                 self.rightMotor.run(Adafruit_MotorHAT.RELEASE)
         else: 
-            if self.actualRightMotor > 0:
+            if self.actualRightSpeed > 0:
                 self.rightMotor.run(Adafruit_MotorHAT.FORWARD)
-                self.rightMotor.setSpeed(self.actualRightMotor)
+                self.rightMotor.setSpeed(self.actualRightSpeed)
             else:
                 self.rightMotor.run(Adafruit_MotorHAT.BACKWARD)
-                self.rightMotor.setSpeed(abs(self.actualRightMotor))        
+                self.rightMotor.setSpeed(abs(self.actualRightSpeed))        
 
 

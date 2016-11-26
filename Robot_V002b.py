@@ -23,7 +23,7 @@ cam = pygame.camera.Camera(cam_list[0],(320,240))
 cam.start()
 
 robot = Tank()
-robot.correctDirections(False,False,False)
+robot.correctDirections(False,False,True)
 
 try:
         print('starting loop')
@@ -63,5 +63,6 @@ try:
 except KeyboardInterrupt:
         pygame.quit()
 
+robot.stop()
 cam.stop()
 pygame.quit()
