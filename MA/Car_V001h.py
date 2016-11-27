@@ -9,7 +9,7 @@ import sys
 #from picamera import PiCamera
 from time import sleep
 from PIL import Image
-from pylab import *
+#from pylab import *
 
 sys.path.append("/home/pi/Adafruit-Motor-HAT-Python-Library") ### ADD PATH
 from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor

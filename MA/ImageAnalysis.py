@@ -3,7 +3,7 @@
 import pygame
 import pygame.camera
 from PIL import Image
-from pylab import *
+#from pylab import *
 
 class ImageAnalysis():
     """Class with methods for image analysis"""
@@ -13,52 +13,61 @@ class ImageAnalysis():
         print("Initiate ImageAnalysis")
 
         # Set target pixel
-        self.tp = (100,90,30)
-        self.distBenchmark = 800
+        #self.tp = (100,90,30)
+        #self.tp = (180,130,70)
+        self.tp = (170,70,20)
+        self.distBenchmark = 8000
         
     # Method to convert pixel int to RGB values
-    def getRGB(pixelInt):
+    def getRGB(self,pixelInt):
+        #print(pixelInt)
         blue = pixelInt & 255
         green = (pixelInt >> 8) & 255
         red = (pixelInt >> 16) & 255
         myArray = [red, green, blue]
         return myArray
 
-    def showMidPixel(img,w,h):
+    def showMidPixel(self,img,w,h):
 
         # Transform        
         pxarray = pygame.PixelArray(img)
-        middlePixel = pxarray[w/2,h/2]
-        rgb = getRGB(midlePixelPixel)
+        middlePixel = pxarray[int(w/2),int(h/2)]
+        
+        #middlePixel = pxarray[150,150]
+        print(middlePixel)
+        rgb = self.getRGB(middlePixel)
         print(rgb)
 
-    def checkPixel(px):
-        rgb = getRGB(px)       
+    def checkPixel(self,px):
+        rgb = self.getRGB(px)       
         distance = (self.tp[0] - rgb[0]) ** 2 + (self.tp[1] - rgb[1]) ** 2 +(self.tp[2] - rgb[2]) ** 2
-        if abs(distance < self.distBenchmark):
+        #print(distance)
+        if distance < self.distBenchmark:
                 return True
         else:
                 return False
 
-    def convertTrueFalse(img,w,h):
+    def convertTrueFalse(self,img,w,h):
+        print("Convert")
         pxarray = pygame.PixelArray(img)
         for x in range(0,w-1):
+            print(x)
             for y in range(0,h-1):
                 check = self.checkPixel(pxarray[x,y])
+                #print(check)
                 if check ==True:
                     pxarray[x,y] = 0
                 else:
-                    pxarray[x,y] = 5000
-        
+                    pxarray[x,y] = 80000
+
+        #img2 = pygame.surface.make_surface(pyarray)
         return pxarray
     
 
 # Method to analyze image to follow line
 def analyzeLine(img):
 
-        # Set values
-        tp = (100,90,30)
-        distanceAllowed = 800
+        # Settings
         directionCutpoint = 0.5
 
         # Transform
@@ -68,15 +77,11 @@ def analyzeLine(img):
         # Loop through
         sum = 0
         count = 0.1
-        for x in range(0,639):
+        for y in range(110,130):
+                for x in range(0,321):
 
-                # Get current pixel
-                myPixel = pxarray[x,240]
-                rgb = getRGB(myPixel)
-                
-                # Compare to targetColor        
-                distance = (tp[0] - rgb[0]) ** 2 + (tp[1] - rgb[1]) ** 2 + (tp[2] - rgb[2]) ** 2
-                if (distance <= distanceAllowed):
+                        # Check
+                        check = self.checkPixel(pxarray[x,y])
                         sum = sum + x
                         count = count + 1
 
