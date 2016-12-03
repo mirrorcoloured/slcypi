@@ -87,6 +87,55 @@ class ImageAnalysis():
         img2 = pygame.PixelArray.make_surface(pxarray)
         return img2
 
+    def convertRainbow(self,img,w,h):
+        print("Convert")
+        pxarray = pygame.PixelArray(img)
+        for x in range(0,int((w-1)),2):
+            print(x)
+            for y in range(0,int((h-1)),2):
+                rgb = self.getRGB(px)       
+                distance = (self.tp[0] - rgb[0]) ** 2 + (self.tp[1] - rgb[1]) ** 2 +(self.tp[2] - rgb[2]) ** 2
+                if distance <= 1000:
+                    pxarray[x,y] = 80000
+                else:
+                    if distance <= 2000:
+                        pxarray[x,y] = 70000:
+                    else:
+                        if distance <= 3000:
+                            pxarray[x,y] = 60000
+                        else:
+                            if distance <= 4000:
+                                pxarray[x,y] = 50000
+                            else:
+                                if distance <= 5000:
+                                    pxarray[x,y] = 40000
+                                else:
+                                    if distance <= 6000:
+                                        pxarray[x,y] = 30000
+                                    else:
+                                        if distance <= 7000:
+                                            pxarray[x,y] = 20000
+                                        else:
+                                            if distance <= 8000:
+                                                pxarray[x,y] = 10000
+                                            
+                            
+
+
+                            
+                
+                check = self.checkPixel(pxarray[x,y])
+                #print(check)
+                
+                if check ==True:
+                    pxarray[x,y] = 50000
+                else:
+                    pxarray[x,y] = 0
+
+        img2 = pygame.PixelArray.make_surface(pxarray)
+        return img2
+
+
     def getLinePosition(self,img,w,h):
         pxarray = pygame.PixelArray(img)
         startY = 0.6

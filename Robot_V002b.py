@@ -38,13 +38,13 @@ try:
         while not done:
 
                 # Camera
+                sleep(2) # Sleep such that camera will get current image 
                 image1 = cam.get_image()
                 #image1 = pygame.transform.scale(image1,(640,480))
                 image1 = pygame.transform.flip(image1,1,1)
                 screen.blit(image1,(0,0))
                 pygame.display.update()
-                sleep(1)
-
+                
                 # User events
                 for event in pygame.event.get():
                         if event.type == pygame.KEYDOWN:
