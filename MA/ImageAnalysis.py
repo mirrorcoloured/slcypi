@@ -16,8 +16,8 @@ class ImageAnalysis():
         # Set target pixel
         #self.tp = (100,90,30)
         #self.tp = (180,130,70)
-        self.tp = (170,70,20)
-        self.distBenchmark = 10000
+        self.tp = (130,110,20)
+        self.distBenchmark = 1050
         
     # Method to convert pixel int to RGB values
     def getRGB(self,pixelInt):
@@ -57,6 +57,7 @@ class ImageAnalysis():
                 sumG = sumG + rgb[1]
                 sumB = sumB + rgb[2]
         av = [int(sumR/count),int(sumG/count),int(sumB/count)]
+        print(av)
         self.tp = av
         return av
         
@@ -73,9 +74,9 @@ class ImageAnalysis():
     def convertTrueFalse(self,img,w,h):
         print("Convert")
         pxarray = pygame.PixelArray(img)
-        for x in range(0,int((w-1))):
+        for x in range(0,int((w-1)),2):
             print(x)
-            for y in range(0,int((h-1))):
+            for y in range(0,int((h-1)),2):
                 check = self.checkPixel(pxarray[x,y])
                 #print(check)
                 if check ==True:
@@ -88,8 +89,8 @@ class ImageAnalysis():
 
     def getLinePosition(self,img,w,h):
         pxarray = pygame.PixelArray(img)
-        startY = 0.7
-        endY = 0.8
+        startY = 0.6
+        endY = 0.9
         sum = 0
         count = 0
         for x in range(0,w):

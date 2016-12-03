@@ -43,6 +43,7 @@ try:
                 image1 = pygame.transform.flip(image1,1,1)
                 screen.blit(image1,(0,0))
                 pygame.display.update()
+                sleep(1)
 
                 # User events
                 for event in pygame.event.get():
@@ -97,14 +98,14 @@ try:
                 if followLine == True:
                         pos = IA.getLinePosition(image1,WIDTH,HEIGHT)
                         print(pos)
-                        if abs(pos) >0.2:
+                        if abs(pos) >0.25:
                                 if pos > 0:
                                         robot.rotateSync(-1)
-                                        sleep(0.05)
+                                        sleep(0.025)
                                         robot.rotateSync(0)
                                 else:
                                         robot.rotateSync(1)
-                                        sleep(0.05)
+                                        sleep(0.025)
                                         robot.rotateSync(0)
                         else:
                                 robot.driveSync(1)
