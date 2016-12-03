@@ -17,7 +17,7 @@ class ImageAnalysis():
         #self.tp = (100,90,30)
         #self.tp = (180,130,70)
         self.tp = (130,110,20)
-        self.distBenchmark = 1050
+        self.distBenchmark = 1500
         
     # Method to convert pixel int to RGB values
     def getRGB(self,pixelInt):
@@ -93,13 +93,13 @@ class ImageAnalysis():
         for x in range(0,int((w-1)),2):
             print(x)
             for y in range(0,int((h-1)),2):
-                rgb = self.getRGB(px)       
+                rgb = self.getRGB(pxarray[x,y])       
                 distance = (self.tp[0] - rgb[0]) ** 2 + (self.tp[1] - rgb[1]) ** 2 +(self.tp[2] - rgb[2]) ** 2
                 if distance <= 1000:
                     pxarray[x,y] = 80000
                 else:
                     if distance <= 2000:
-                        pxarray[x,y] = 70000:
+                        pxarray[x,y] = 70000
                     else:
                         if distance <= 3000:
                             pxarray[x,y] = 60000
@@ -119,19 +119,6 @@ class ImageAnalysis():
                                             if distance <= 8000:
                                                 pxarray[x,y] = 10000
                                             
-                            
-
-
-                            
-                
-                check = self.checkPixel(pxarray[x,y])
-                #print(check)
-                
-                if check ==True:
-                    pxarray[x,y] = 50000
-                else:
-                    pxarray[x,y] = 0
-
         img2 = pygame.PixelArray.make_surface(pxarray)
         return img2
 
