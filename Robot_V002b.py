@@ -76,6 +76,13 @@ try:
                                     screen.blit(image1,(0,0))
                                     pygame.display.update()
                                     sleep(5)
+                                if (event.key ==pygame.K_r):
+
+                                    # Analyze
+                                    image1 = IA.convertRainbow(image1,WIDTH,HEIGHT)                
+                                    screen.blit(image1,(0,0))
+                                    pygame.display.update()
+                                    sleep(5)
                                 if (event.key ==pygame.K_a):
 
                                     # Analyze
