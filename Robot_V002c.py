@@ -17,11 +17,12 @@ from ImageAnalysis import ImageAnalysis
 WIDTH = 320
 HEIGHT = 240
 
-# Pygame and camera initialize
+# Pygame display
 pygame.init()
 pygame.display.set_caption('My Robot')
-pygame.camera.init()
 screen = pygame.display.set_mode((WIDTH,HEIGHT),0)
+
+pygame.camera.init()
 cam_list = pygame.camera.list_cameras()
 cam = pygame.camera.Camera(cam_list[0],(WIDTH,HEIGHT))
 cam.start()
