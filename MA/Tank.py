@@ -9,7 +9,7 @@ from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor
 class Tank():
     """Initialize car and control functions"""
 
-    def __init__(self) -> None:
+    def __init__(self):
         """Initialize method"""
         self.mh = Adafruit_MotorHAT(addr=0x60)
         self.leftMotor = self.mh.getMotor(1)
@@ -49,11 +49,11 @@ class Tank():
         self.mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
         self.mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
 
-    def stop(self) -> None:
+    def stop(self):
         """Method to stop driving"""
         self.turnOffMotors()
         
-    def drive(self,direction, speed=100) -> None:
+    def drive(self,direction, speed=100):
         """Method control forward speed
         direction <integer> {-1,0,1}
         speed <integer> {0:255}"""
@@ -93,7 +93,7 @@ class Tank():
                 self.leftMotor.run(Adafruit_MotorHAT.RELEASE)
                 self.rightMotor.run(Adafruit_MotorHAT.RELEASE)
 
-    def driveSync(self,direction, speed=100) -> None:
+    def driveSync(self,direction, speed=100):
         """Method control forward speed
         direction <integer> {-1,0,1}
         speed <integer> {0:255}"""

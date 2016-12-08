@@ -9,7 +9,7 @@ from PIL import Image
 class ImageAnalysis():
     """Class with methods for image analysis"""
 
-    def __init__(self) -> None:
+    def __init__(self):
         """Initialize method"""
         print("Initiate ImageAnalysis")
 
@@ -125,10 +125,10 @@ class ImageAnalysis():
 
     def getLinePosition(self,img,w,h):
         pxarray = pygame.PixelArray(img)
-        startY = 0.6
-        endY = 0.9
+        startY = 0
+        endY = 0.3
         sum = 0
-        count = 0
+        count = 0.1
         for x in range(0,w):
             for y in range(int(h*startY),int(h*endY)):
                 check = self.checkPixel(pxarray[x,y])

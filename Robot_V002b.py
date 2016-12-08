@@ -38,10 +38,10 @@ try:
         while not done:
 
                 # Camera
-                sleep(5) # Sleep such that camera will get current image 
+                #sleep(5) # Sleep such that camera will get current image 
                 image1 = cam.get_image()
                 #image1 = pygame.transform.scale(image1,(640,480))
-                image1 = pygame.transform.flip(image1,1,1)
+                #image1 = pygame.transform.flip(image1,1,1)
                 screen.blit(image1,(0,0))
                 pygame.display.update()
                 
@@ -105,19 +105,20 @@ try:
                 if followLine == True:
                         pos = IA.getLinePosition(image1,WIDTH,HEIGHT)
                         print(pos)
-                        if abs(pos) >0.25:
+                        if abs(pos) >0.5:
                                 if pos > 0:
                                         robot.rotateSync(-1)
-                                        sleep(0.025)
+                                        sleep(0.01)
                                         robot.rotateSync(0)
                                 else:
                                         robot.rotateSync(1)
-                                        sleep(0.025)
+                                        sleep(0.01)
                                         robot.rotateSync(0)
                         else:
                                 robot.driveSync(1)
-                                sleep(0.5)
+                                sleep(0.01)
                                 robot.driveSync(0)
+ 
                         
 except KeyboardInterrupt:
         pygame.quit()
