@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # Use pi camera directly instead of via pygame.camera
 
+import io
 import sys
 sys.path.append("/home/pi/Documents/Robots/slcypi/MA") ### ADD PATH
 sys.path.append("/home/pi/Documents/Robots/slcypi/HAT_Python3") ### ADD PATH
@@ -10,8 +11,9 @@ import atexit
 import pygame
 #import pygame.camera
 import picamera
+import picamera.array
 import cv2
-import numpy
+import numpy as np
 from PIL import Image
 #from pylab import *
 from Tank import Tank
@@ -41,10 +43,12 @@ IA = ImageAnalysis()
 followLine = False
 
 # Initialize camera
+stream = io.BytesIO()
 with picamera.PiCamera() as camera:
-    camera.resultion = (WIDTH, HEIGHT)
+    camera.resolution = (WIDTH, HEIGHT)
     camera.start_preview()
     time.sleep(2)
+    camera.capture(stream, format='jpeg')
     with picamera.array.PiRGBArray(camera) as stream:
         camera.capture(stream, format='bgr')
         # At this point the image is available as stream.array
@@ -57,8 +61,15 @@ with picamera.PiCamera() as camera:
 
                         # Camera
         
-                        image1 = stream.array
-                        image1 = pygame.PixelArray.make_surface(image1)
+                        #image1 = stream.array
+                        #image1 = Image.fromarray(image1, 'RGB')
+                        #print(type(image1))
+                        #image1 = pygame.numpy.array.make_surface(image1)
+
+                        data = np.fromstring(stream.getvalue(), dtype=np.uint8)
+                        image1 = cv2.imdecode(data, 1)
+                        #image1 = image1[:, :, ::-1]
+                        
                         screen.blit(image1,(0,0))
                         pygame.display.update()
                         
