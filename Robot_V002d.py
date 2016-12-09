@@ -1,10 +1,13 @@
 #!/usr/bin/python
 # Use pi camera directly instead of via pygame.camere
+# 4.2 Capturing to a stream
 
 import io
 import sys
 sys.path.append("/home/pi/Documents/Robots/slcypi/MA") ### ADD PATH
 sys.path.append("/home/pi/Documents/Robots/slcypi/HAT_Python3") ### ADD PATH
+from ImageAnalysis import ImageAnalysis
+from Tank import Tank
 import time
 from time import sleep
 import atexit
@@ -15,10 +18,6 @@ import picamera.array
 import cv2
 import numpy as np
 from PIL import Image
-#from pylab import *
-from Tank import Tank
-
-from ImageAnalysis import ImageAnalysis
 
 # Settings
 WIDTH = 320
@@ -28,11 +27,6 @@ HEIGHT = 240
 pygame.init()
 pygame.display.set_caption('My Robot')
 screen = pygame.display.set_mode((WIDTH,HEIGHT),0)
-
-#pygame.camera.init()
-#cam_list = pygame.camera.list_cameras()
-#cam = pygame.camera.Camera(cam_list[0],(WIDTH,HEIGHT))
-#cam.start()
 
 # Initialize Tank
 robot = Tank()
@@ -48,28 +42,15 @@ with picamera.PiCamera() as camera:
     camera.resolution = (WIDTH, HEIGHT)
     camera.start_preview()
     time.sleep(2)
-    camera.capture(stream, format='jpeg')
-    with picamera.array.PiRGBArray(camera) as stream:
-        camera.capture(stream, format='bgr')
-        # At this point the image is available as stream.array
-        #image = stream.array
-
+    #camera.capture(stream, 'jpeg')    
+        
         try:
                 print('starting loop')
                 done = False
                 while not done:
 
                         # Camera
-        
-                        #image1 = stream.array
-                        #image1 = Image.fromarray(image1, 'RGB')
-                        #print(type(image1))
-                        #image1 = pygame.numpy.array.make_surface(image1)
-
-                        data = np.fromstring(stream.getvalue(), dtype=np.uint8)
-                        image1 = cv2.imdecode(data, 1)
-                        #image1 = image1[:, :, ::-1]
-                        
+                        image1 = camera.capture(stream, 'jpeg')                                               
                         screen.blit(image1,(0,0))
                         pygame.display.update()
                         
