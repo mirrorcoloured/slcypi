@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Use pi camera directly instead of via pygame.camera
+# Use pi camera directly instead of via pygame.camere
 
 import io
 import sys
