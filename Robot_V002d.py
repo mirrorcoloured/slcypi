@@ -50,7 +50,8 @@ with picamera.PiCamera() as camera:
                 while not done:
 
                         # Camera
-                        image1 = camera.capture(stream, 'jpeg')                                               
+                        camera.capture(stream, 'jpeg')
+                        image1= cv2.imdecode(stream, 1)
                         screen.blit(image1,(0,0))
                         pygame.display.update()
                         
