@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import time
+import numpy as np
 
 import slcypi.slcyPins as Pins
 import slcypi.slcyGeneral as General
@@ -68,12 +69,23 @@ class Servo():
     def __posmap__(self, value) -> float:
         """Returns a mapping transformation
         [-1,1] -> [1,10]"""
-        # dx = 2 # -1 to 1
-        # dy = 9 # 1 to 10
-        # ox = 1 # -1 -> 0
-        # oy = 1 # 0 -> 1
-        # (value + ox) * (dy / dx) + oy
-        return ((value * -1) + 1) * (9 / 2) + 1
+        # maps [x1, y1] -> [x2, y2]
+        # dx = 2 # x2 - x1
+        # dy = 9 # y2 - y1
+        # x1 = -1
+        # x2 = 1
+        # (value - x1) * (dy / dx) + x2
+        return ((value - -1) * (9 / 2)) + 1
+    def __trigmap__(self, value) -> float:
+        """Returns a mapping transformation
+        [-1,1] -> [pi,0]"""
+        # maps [x1, y1] -> [x2, y2]
+        # dx = np.pi + 1 # x2 - x1
+        # dy = -1 # y2 - y1
+        # x1 = -1
+        # x2 = np.pi
+        # (value - x1) * (dy / dx) + x2
+        return ((value - -1) * ((np.pi + 1) / -1)) + np.pi
     def __inrange__(self, value) -> bool:
         """Checks if a value is between -1 and 1"""
         return value >= -1 and value <= 1
