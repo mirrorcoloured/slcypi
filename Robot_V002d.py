@@ -39,10 +39,10 @@ followLine = False
 # Initialize camera
 stream = io.BytesIO()
 with picamera.PiCamera() as camera:
-    camera.resolution = (WIDTH, HEIGHT)
-    camera.start_preview()
-    time.sleep(2)
-    #camera.capture(stream, 'jpeg')    
+        camera.resolution = (WIDTH, HEIGHT)
+        camera.start_preview()
+        time.sleep(2)
+        #camera.capture(stream, 'jpeg')    
         
         try:
                 print('starting loop')
