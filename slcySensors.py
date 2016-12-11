@@ -44,10 +44,7 @@ class UltrasonicSensor():
             scaleddist = 0
         else:
             scaleddist = int(dist * 30 / maxdist)
-        o = '|O'
-        for i in range(scaleddist):
-            o += ' '
-        o += 'X'
+        o = '|O' + ' ' * scaleddist + 'X'
         print(dist,'\t',o)
     def setunit(self, unit='m') -> None:
         """Sets the measurement unit:

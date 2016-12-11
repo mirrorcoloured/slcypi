@@ -1,3 +1,45 @@
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
+
+def plot2d(x, y, lines=False, xlabel='X', ylabel='Y', title='', color='k', marker = '.'):
+    """Creates a 2D scatter or line plot
+    x, y <list> or <tuple>
+    xlabel, ylabel <str>
+    color <str> [krgbcmyw] or '#FFFFFF' or (0:1,0:1,0:1)
+    marker <str> [.,ov^<>12348sp*hH+xDd|_]
+    """
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    if lines:
+        ax.plot(x, y, c=color, marker=marker)
+    else:
+        ax.scatter(x, y, c=color, marker=marker)
+    fig.suptitle(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    plt.show()
+
+def plot3d(x, y, z, lines=False, xlabel='X', ylabel='Y', zlabel='Z', title='', color='k', marker = '.'):
+    """Creates a 3D scatter or line plot
+    x, y, z <list> or <tuple>
+    xlabel, ylabel, zlabel <str>
+    color <str> [krgbcmyw] or '#FFFFFF' or (0:1,0:1,0:1)
+    marker <str> [.,ov^<>12348sp*hH+xDd|_]
+    """
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    if lines:
+        ax.plot(x, y, z, c=color, marker=marker)
+    else:
+        ax.scatter(x, y, z, c=color, marker=marker)
+    fig.suptitle(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_zlabel(zlabel)
+    plt.show()
+
 class Dataset():
     """List of dicts containing any desired keys
     ex = Dataset([{'time':0,'loc':45}, {'time':1,'loc':48}])"""
@@ -12,6 +54,58 @@ class Dataset():
         """Returns the number of keys in the first data entry"""
         if self.len() > 0:
             return len(self.list[0])
+    def exportdataraw(self, file='temp.data') -> None:
+        """Exports the dataset as a raw text string"""
+        with open(file,'w') as f:
+            f.write(str(self.list))
+    def exportdatasheet(self, file='temp2.data') -> None:
+        """Exports the dataset as a tab-separated format, suitable for pasting into a spreadsheet"""
+        o = ''
+        headers = list(self.list[0].keys())
+        o += '\t'.join(headers)
+        for i in self.list:
+            o += '\n'
+            for h in headers:
+                o += str(i[h]) + '\t'
+            o = o[:-1]
+        with open(file,'w') as f:
+            f.write(o)
+    def importdata(self, file='temp.data') -> None:
+        """Imports a dataset from a raw text string file"""
+        with open(file,encoding='utf8') as f:
+            text = f.read()
+        self.list = []
+        items = text.split('}, {')
+        print('split input into',len(items),'items:',items)
+        for i in items:
+            print('processing item:',i)
+            for c in "[]{}'":
+                i = i.replace(c,'')
+            print('finished processing item:',i)
+            elements = i.split(', ')
+            t = {}
+            for e in elements:
+                print('processing element:',e)
+                k,v = e.split(': ')
+                try:
+                    v = float(v)
+                except:
+                    pass
+                t[k] = v
+            self.list.append(t)
+    def plot2d(self, keyx, keyy, title='') -> None:
+        x = [i[keyx] for i in self.list]
+        y = [i[keyy] for i in self.list]
+        if title == '':
+            title = keyy + ' vs ' + keyx
+        plot2d(x, y, xlabel = keyx, ylabel = keyy, title = title)
+    def plot3d(self, keyx, keyy, keyz, title='') -> None:
+        x = [i[keyx] for i in self.list]
+        y = [i[keyy] for i in self.list]
+        z = [i[keyz] for i in self.list]
+        if title == '':
+            title = keyz + ' vs ' + keyy + ' vs ' + keyx
+        plot3d(x, y, z, xlabel = keyx, ylabel = keyy, zlabel = keyz, title = title)
     def max(self,key) -> float:
         """Returns the entry with the maximum value of the selected key"""
         o = self.list[0]
@@ -27,10 +121,22 @@ class Dataset():
                 o = i
         return o
     def mean(self,key) -> float:
-        """Returns the mean value of the selected key"""
+        """Returns the mean value of the selected key
+        key <str>"""
         s = self.sublist(key)
         return sum(s) / len(s)
-    def calcsd(self, key) -> None:
+    def linearmap(self, oldkey:str, newkey:str, r1:list, r2:list) -> None:
+        """Maps values of key in range r1 to range r2 using a linear transformation
+        ex.linearmap('radians', 'degrees', [0,3.1415], [0,180])"""
+        r1n, r1x = r1
+        r2n, r2x = r2
+        d1 = r1x - r1n
+        d2 = r2x - r2n
+        # return ((n - r1n) * (d2 / d1)) + r2n
+        fprestring = '(('
+        fpoststring = ' - ' + str(r1n) + ') * (' + str(d2) + ' / ' + str(d1) +')) + '+ str(r2n)
+        self.addcalc(newkey, oldkey, fprestring, fpoststring)
+    def calcsd(self, key:str) -> None:
         """Adds SD calculation based on specified key"""
         mean = self.mean(key)
         va = []
@@ -43,13 +149,12 @@ class Dataset():
         sd = var ** (1/2)
         self.__sd__ = sd
         self.addcalc(key + '_sd', key, '(', '-' + str(mean) + ')/' + str(sd))
-    def calcdelta(self, key) -> None:
+    def calcdelta(self, key:str) -> None:
         """Adds delta calculation of specified key
-        delta = abs(value - mean)
-        """
+        delta = abs(value - mean)"""
         mean = self.mean(key)
         self.addcalc(key + '_delta', key, 'abs(', '-' + str(mean) + ')')
-    def renamekey(self, oldkey, newkey) -> None:
+    def renamekey(self, oldkey:str, newkey:str) -> None:
         """Renames a key
         ex.renamekey('time', 't')"""
         for i in self.list:
@@ -152,4 +257,4 @@ def DatasetDemo():
     d.calcsd('x')
     d.print()
     return d
-#d = DatasetDemo()
+d = DatasetDemo()

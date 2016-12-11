@@ -48,6 +48,18 @@ def LoadPins(mapping,inp) -> dict:
         print('Expected:',mapping)
         return {}
 
+def BoolToSign(inp):
+    """Converts boolean bits into signed bits
+    0 -> -1
+    1 -> 1"""
+    return (inp * 2) - 1
+
+def SignToBool(inp):
+    """Converts signed bits into boolean bits
+    -1 -> 0
+    1 -> 1"""
+    return (inp + 1) / 2
+
 ### PYGAME ###
 
 def WindowSetup(size=(300,50),caption='',text='',background=(0,0,0),foreground=(255,255,255)):
