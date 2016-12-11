@@ -39,10 +39,10 @@ followLine = False
 # Initialize camera
 stream = io.BytesIO()
 with picamera.PiCamera() as camera:
-    camera.resolution = (WIDTH, HEIGHT)
-    camera.start_preview()
-    time.sleep(2)
-    #camera.capture(stream, 'jpeg')    
+        camera.resolution = (WIDTH, HEIGHT)
+        camera.start_preview()
+        time.sleep(2)
+        #camera.capture(stream, 'jpeg')    
         
         try:
                 print('starting loop')
@@ -50,8 +50,9 @@ with picamera.PiCamera() as camera:
                 while not done:
 
                         # Camera
-                        camera.capture(stream, 'jpeg')
-                        image1= cv2.imdecode(stream, 1)
+                        camera.capture(stream, 'jpeg', use_video_port=True)
+                        data = np.fromstring(stream.getvalue(), dtype=np.uint8)    
+                        image1=pygame.surfarray.make_surface(data)
                         screen.blit(image1,(0,0))
                         pygame.display.update()
                         
