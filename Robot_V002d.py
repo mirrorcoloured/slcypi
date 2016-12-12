@@ -37,7 +37,6 @@ IA = ImageAnalysis()
 followLine = False
 
 # Initialize camera
-stream = io.BytesIO()
 with picamera.PiCamera() as camera:
         camera.resolution = (WIDTH, HEIGHT)
         camera.start_preview()
@@ -48,16 +47,20 @@ with picamera.PiCamera() as camera:
                 print('starting loop')
                 done = False
                 while not done:
+                # Capture image
+                camera.capture(output, 'rgb', use_video_port=True)
 
-                        # Camera
-                        camera.capture(stream, 'jpeg', use_video_port=True)
-                        data = np.fromstring(stream.getvalue(), dtype=np.uint8)    
-                        image1=pygame.surfarray.make_surface(data)
-                        screen.blit(image1,(0,0))
-                        pygame.display.update()
+                # Convert to surface
+                newoutput = np.reshape(output, (240,320,3))            
+                sface = pygame.surfarray.make_surface(newoutput)
+                sface = pygame.transform.rotate(sface,270)
+            
+                # Display
+                screen.blit(sface,(0,0))
+                pygame.display.update()            
                         
-                        # User events
-                        for event in pygame.event.get():
+                # User events
+                for event in pygame.event.get():
                                 if event.type == pygame.KEYDOWN:
                                         if (event.key == pygame.K_ESCAPE):
                                                 done = True
