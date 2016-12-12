@@ -125,8 +125,8 @@ class ImageAnalysis():
 
     def getLinePosition(self,img,w,h):
         pxarray = pygame.PixelArray(img)
-        startY = 0
-        endY = 0.3
+        startY = 0.3
+        endY = 0.6
         sum = 0
         count = 0.1
         for x in range(0,w):

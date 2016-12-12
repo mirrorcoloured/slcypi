@@ -41,26 +41,27 @@ with picamera.PiCamera() as camera:
         camera.resolution = (WIDTH, HEIGHT)
         camera.start_preview()
         time.sleep(2)
-        #camera.capture(stream, 'jpeg')    
+        output = np.empty((320 * 240 * 3,), dtype=np.uint8)
         
         try:
                 print('starting loop')
                 done = False
                 while not done:
-                # Capture image
-                camera.capture(output, 'rgb', use_video_port=True)
+                        # Capture image
+                        camera.capture(output, 'rgb', use_video_port=True)
 
-                # Convert to surface
-                newoutput = np.reshape(output, (240,320,3))            
-                sface = pygame.surfarray.make_surface(newoutput)
-                sface = pygame.transform.rotate(sface,270)
+                        # Convert to surface
+                        newoutput = np.reshape(output, (240,320,3))            
+                        sface = pygame.surfarray.make_surface(newoutput)
+                        sface = pygame.transform.rotate(sface,270)
+                        sface = pygame.transform.flip(sface, True, False)
             
-                # Display
-                screen.blit(sface,(0,0))
-                pygame.display.update()            
+                        # Display
+                        screen.blit(sface,(0,0))
+                        pygame.display.update()            
                         
-                # User events
-                for event in pygame.event.get():
+                        # User events
+                        for event in pygame.event.get():
                                 if event.type == pygame.KEYDOWN:
                                         if (event.key == pygame.K_ESCAPE):
                                                 done = True
@@ -74,25 +75,25 @@ with picamera.PiCamera() as camera:
                                                 robot.rotateSync(-1,45)                                        
                                         if (event.key == pygame.K_s):
                                                 # Set target
-                                                rgb = IA.setTarget(image1,WIDTH,HEIGHT)
-                                                image1.fill(rgb)
-                                                screen.blit(image1,(0,0))
+                                                rgb = IA.setTarget(sface,WIDTH,HEIGHT)
+                                                sface.fill(rgb)
+                                                screen.blit(sface,(0,0))
                                                 pygame.display.update()
                                                 sleep(5)
                                         if (event.key ==pygame.K_a):
                                                 # Analyze
-                                                image1 = IA.convertTrueFalse(image1,WIDTH,HEIGHT)                
-                                                screen.blit(image1,(0,0))
+                                                sface = IA.convertTrueFalse(sface,WIDTH,HEIGHT)                
+                                                screen.blit(sface,(0,0))
                                                 pygame.display.update()
                                                 sleep(5)
                                         if (event.key ==pygame.K_r):
                                                 # Analyze - rainbow
-                                                image1 = IA.convertRainbow(image1,WIDTH,HEIGHT)                
-                                                screen.blit(image1,(0,0))
+                                                sface = IA.convertRainbow(sface,WIDTH,HEIGHT)                
+                                                screen.blit(sface,(0,0))
                                                 pygame.display.update()
                                                 sleep(5)
                                         if (event.key==pygame.K_c):
-                                                pos = IA.getLinePosition(image1,WIDTH,HEIGHT)
+                                                pos = IA.getLinePosition(sface,WIDTH,HEIGHT)
                                                 print(pos)
                                         if (event.key == pygame.K_q):
                                                 followLine = True
@@ -110,20 +111,20 @@ with picamera.PiCamera() as camera:
                                         if (event.key == pygame.K_RIGHT):
                                                 robot.rotateSync(0)
                         if followLine == True:
-                                pos = IA.getLinePosition(image1,WIDTH,HEIGHT)
+                                pos = IA.getLinePosition(sface,WIDTH,HEIGHT)
                                 print(pos)
                                 if abs(pos) >0.25:
                                         if pos > 0:
                                                 robot.rotateSync(-1)
-                                                sleep(0.025)
+                                                sleep(0.01)
                                                 robot.rotateSync(0)
                                         else:
                                                 robot.rotateSync(1)
-                                                sleep(0.025)
+                                                sleep(0.01)
                                                 robot.rotateSync(0)
                                 else:
                                         robot.driveSync(1)
-                                        sleep(0.5)
+                                        sleep(0.1)
                                         robot.driveSync(0)
                                 
         except KeyboardInterrupt:
