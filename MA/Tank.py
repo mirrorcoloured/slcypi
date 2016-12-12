@@ -119,7 +119,6 @@ class Tank():
         self.setSpeeds()
 
     def setSpeeds(self):
-        print("Set Speeds")
         self.leftSpeed = self.driveSpeed - self.rotateSpeed
         self.rightSpeed = self.driveSpeed + self.rotateSpeed
 
