@@ -9,6 +9,9 @@ from Tank import Tank
 import picamera
 import picamera.array
 import time
+import pygame
+from scipy import ndimage
+from time import sleep
 
 # Settings
 WIDTH = 320
@@ -24,8 +27,8 @@ pygame.display.set_caption('My Robot')
 screen = pygame.display.set_mode((WIDTH,HEIGHT),0)
 
 # Image analysis
-lower = np.array([25,10,0])
-upper = np.array([60,100,255])
+lower = np.array([35,0,0])
+upper = np.array([120,200,255])
 
 # Analyze line function
 def analyzeLine(mask, WIDTH, HEIGHT):
@@ -64,11 +67,13 @@ with picamera.PiCamera() as camera:
                         # stream.array now contains the image data in BGR order
                 
                         # Image process
-                        frame = frame.array
+                        frame = stream.array
+                        #frame = ndimage.rotate(frame, 90)
+                        #frame = cv2.flip("horizontal flip",frame)
                         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)   
                         mask = cv2.inRange(hsv, lower, upper)
                         res = cv2.bitwise_and(frame, frame, mask=mask)        
-                        sface = pygame.surfarray.make_surface(frame)                        
+                        sface = pygame.surfarray.make_surface(res)                        
 
                         # Display image
                         screen.blit(sface,(0,0))
