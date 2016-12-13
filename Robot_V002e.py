@@ -1,136 +1,96 @@
-#!/usr/bin/python
-# Use pi camera directly instead of via pygame.camere
-# 4.2 Capturing to a stream
-
-import io
-import sys
-sys.path.append("/home/pi/Documents/Robots/slcypi/MA") ### ADD PATH
-sys.path.append("/home/pi/Documents/Robots/slcypi/HAT_Python3") ### ADD PATH
-from ImageAnalysis import ImageAnalysis
-from Tank import Tank
-import time
-from time import sleep
-import atexit
-import pygame
-#import pygame.camera
-import picamera
-import picamera.array
+# Import statements
 import cv2
 import numpy as np
-from PIL import Image
+import matplotlib.pyplot as plt
+from Tank import Tank
 
 # Settings
 WIDTH = 320
 HEIGHT = 240
 
-# Initialize Pygame
-pygame.init()
-pygame.display.set_caption('My Robot')
-screen = pygame.display.set_mode((WIDTH,HEIGHT),0)
-
 # Initialize Tank
 robot = Tank()
 robot.correctDirections(False,False,True)
 
-# Initialize image analysis
-IA = ImageAnalysis()
-followLine = False
+# Camera
+cap = cv2.VideoCapture(0)
+camcapture.set(3,WIDTH)
+camcapture.set(4,HEIGHT)
 
-# Initialize camera
-with picamera.PiCamera() as camera:
-        camera.resolution = (WIDTH, HEIGHT)
-        camera.start_preview()
-        time.sleep(2)
-        output = np.empty((320 * 240 * 3,), dtype=np.uint8)
+# Image analysis
+lower = np.array([25,10,0])
+upper = np.array([60,100,255])
+
+def analyzeLine(mask, WIDTH, HEIGHT):
+
+        startY = 0.4
+        endY = 0.6
+        sum = 0
+        count = 0.1
+        for x in range(0,HEIGHT):
+                for y in range(int(HEIGHT*startY),int(HEIGHT*endY)):
+                        if mask[x,y] == True:
+                                sum = sum + x
+                                count = count + 1
         
-        try:
-                print('starting loop')
-                done = False
-                while not done:
-                        
-                        # Capture image
-                        camera.capture(output, 'bgr', use_video_port=True)
+        if count > 5:
 
-                        # Convert to surface
-                        newoutput = np.reshape(output, (240,320,3))            
-                        sface = pygame.surfarray.make_surface(newoutput)
-                        sface = pygame.transform.rotate(sface,270)
-                        sface = pygame.transform.flip(sface, True, False)
-            
-                        # Display
-                        screen.blit(sface,(0,0))
-                        pygame.display.update()            
-                        
-                        # User events
-                        for event in pygame.event.get():
-                                if event.type == pygame.KEYDOWN:
-                                        if (event.key == pygame.K_ESCAPE):
-                                                done = True
-                                        if event.key == (pygame.K_UP):
-                                                robot.driveSync(1)
-                                        if event.key == (pygame.K_DOWN):
-                                                robot.driveSync(-1)
-                                        if (event.key == pygame.K_LEFT):
-                                                robot.rotateSync(1,45)
-                                        if (event.key == pygame.K_RIGHT):
-                                                robot.rotateSync(-1,45)                                        
-                                        if (event.key == pygame.K_s):
-                                                # Set target
-                                                rgb = IA.setTarget(sface,WIDTH,HEIGHT)
-                                                sface.fill(rgb)
-                                                screen.blit(sface,(0,0))
-                                                pygame.display.update()
-                                                sleep(5)
-                                        if (event.key ==pygame.K_a):
-                                                # Analyze
-                                                sface = IA.convertTrueFalse(sface,WIDTH,HEIGHT)                
-                                                screen.blit(sface,(0,0))
-                                                pygame.display.update()
-                                                sleep(5)
-                                        if (event.key ==pygame.K_r):
-                                                # Analyze - rainbow
-                                                sface = IA.convertRainbow(sface,WIDTH,HEIGHT)                
-                                                screen.blit(sface,(0,0))
-                                                pygame.display.update()
-                                                sleep(5)
-                                        if (event.key==pygame.K_c):
-                                                pos = IA.getLinePosition(sface,WIDTH,HEIGHT)
-                                                print(pos)
-                                        if (event.key == pygame.K_q):
-                                                followLine = True
-                                        if (event.key == pygame.K_w):
-                                                followLine = False
-                                                robot.driveSync(0)
-                                                robot.rotateSync(0)
-                                if event.type == pygame.KEYUP:
-                                        if event.key == (pygame.K_UP):
-                                                robot.driveSync(0)
-                                        if event.key == (pygame.K_DOWN):
-                                                robot.driveSync(0)
-                                        if (event.key == pygame.K_LEFT):
-                                                robot.rotateSync(0)
-                                        if (event.key == pygame.K_RIGHT):
-                                                robot.rotateSync(0)
-                        if followLine == True:
-                                pos = IA.getLinePosition(sface,WIDTH,HEIGHT)
-                                print(pos)
-                                if abs(pos) >0.25:
-                                        if pos > 0:
-                                                robot.rotateSync(-1)
-                                                sleep(0.01)
-                                                robot.rotateSync(0)
-                                        else:
-                                                robot.rotateSync(1)
-                                                sleep(0.01)
-                                                robot.rotateSync(0)
-                                else:
-                                        robot.driveSync(1)
-                                        sleep(0.1)
-                                        robot.driveSync(0)
-                                
-        except KeyboardInterrupt:
-                pygame.quit()
+                # Compute average
+                average = sum / count
+        
+                # standardize
+                direction = (average - (w / 2)) / (w /2) 
+        
+                return direction, count
+        else:
+                return -999, count
 
-robot.stop()
-camera.stop_preview()
-pygame.quit()
+
+# Main loop
+auto = False
+while True:
+
+        # Read image
+        _, frame = cap.read()
+        
+        # Image filter
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)   
+        mask = cv2.inRange(hsv, lower, upper)
+        res = cv2.bitwise_and(frame, frame, mask=mask)
+        
+        # Show image
+        cv2.imshow('Robot',res)
+        
+        # Key events
+        if cv2.waitKey(1) & 0xFF == ord('q'):  # Quit
+                break
+        if cv2.waitKey(1) & 0xFF == ord('w'):  # Start autonomous
+                auto = True
+        if cv2.waitKey(1) & 0xFF == ord('e'):  # Stop autonomous
+                auto = False
+        
+        # Autonomous
+        if auto == True:
+        
+                # Analyze line
+                aRes = analyzeLine(mask, WIDTH, HEIGHT)
+                print(aRes)
+                dir = aRes[0]
+                
+                # Drive         
+                if abs(pos) > 0.25:
+                        if pos > 0:
+                                robot.rotateSync(-1)
+                                sleep(0.01)
+                                robot.rotateSync(0)
+                        else:
+                                robot.rotateSync(1)
+                                sleep(0.01)
+                                robot.rotateSync(0)
+                else: 
+                        robot.driveSync(1)
+                        sleep(0.1)
+                        robot.driveSync(0)
+
+cap.release()
+cv2.destroyAllWindows()
