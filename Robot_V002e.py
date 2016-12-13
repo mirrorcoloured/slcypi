@@ -1,4 +1,7 @@
 # Import statements
+import sys
+sys.path.append("/home/pi/Documents/Robots/slcypi/MA") ### ADD PATH
+sys.path.append("/home/pi/Documents/Robots/slcypi/HAT_Python3") ### ADD PATH
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,8 +17,28 @@ robot.correctDirections(False,False,True)
 
 # Camera
 cap = cv2.VideoCapture(0)
-camcapture.set(3,WIDTH)
-camcapture.set(4,HEIGHT)
+
+print("HI")
+# Start window
+cv2.startWindowThread()
+print("HI")
+cv2.namedWindow('Robot')
+print("HI")
+
+# Read image
+_, frame = cap.read()
+print(frame.shape)
+print("HI")
+
+# Show image
+cv2.imshow('Robot',frame)
+cv2.waitKey()
+print("HI")
+time.sleep(5)
+        
+
+cap.set(3,WIDTH)
+cap.set(4,HEIGHT)
 
 # Image analysis
 lower = np.array([25,10,0])
