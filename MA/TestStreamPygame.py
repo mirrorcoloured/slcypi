@@ -3,6 +3,9 @@ import picamera
 import picamera.array
 import pygame
 
+WIDTH = 320
+HEIGHT = 240
+
 # Initialize Pygame
 pygame.init()
 pygame.display.set_caption('My Robot')
