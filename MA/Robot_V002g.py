@@ -59,7 +59,7 @@ with picamera.PiCamera() as camera:
         with picamera.array.PiRGBArray(camera) as stream:
                 camera.resolution = (320, 240)
 
-                while done = False:
+                while done == False:
                         camera.capture(stream, 'bgr', use_video_port=True)
                         # stream.array now contains the image data in BGR order
                 
