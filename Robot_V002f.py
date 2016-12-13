@@ -1,4 +1,7 @@
 # Import statements
+import sys
+sys.path.append("/home/pi/Documents/Robots/slcypi/MA") ### ADD PATH
+sys.path.append("/home/pi/Documents/Robots/slcypi/HAT_Python3") ### ADD PATH
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,7 +21,7 @@ robot.correctDirections(False,False,True)
 # initialize the camera and grab a reference to the raw camera capture
 camera = PiCamera()
 camera.resolution = (WIDTH, HEIGHT)
-camera.framerate = 32
+camera.framerate = 4
 rawCapture = PiRGBArray(camera, size=(WIDTH, HEIGHT))
  
 # allow the camera to warmup
@@ -55,25 +58,31 @@ def analyzeLine(mask, WIDTH, HEIGHT):
 
 auto = False 
 # capture frames from the camera
+#cv2.startWindowThread()
+#cv2.namedWindow("Frame")
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
 
-	#image = frame.array
+        frame = frame.array
+        print(frame.shape)
  
         # Image filter
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)   
+        print(hsv.shape)
         mask = cv2.inRange(hsv, lower, upper)
+        print(mask.shape)
         res = cv2.bitwise_and(frame, frame, mask=mask)
+        print(res.shape)        
 
-	# show the frame
-	cv2.imshow("Frame", res)
-	key = cv2.waitKey(1) & 0xFF
+        # show the frame
+        cv2.imshow("Frame", res)
+        ksey = cv2.waitKey(1) & 0xFF
  
-	# clear the stream in preparation for the next frame
-	rawCapture.truncate(0)
+        # clear the stream in preparation for the next frame
+        rawCapture.truncate(0)
  
-	# Key events
-	if key == ord("q"):
-		break
+        # Key events
+        if key == ord("q"):
+                break
         if key == ord('q'):  # Quit
                 break
         if key == ord('w'):  # Start autonomous
