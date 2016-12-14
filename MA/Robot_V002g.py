@@ -24,11 +24,11 @@ robot.correctDirections(False,False,True)
 # Initialize Pygame
 pygame.init()
 pygame.display.set_caption('My Robot')
-screen = pygame.display.set_mode((WIDTH,HEIGHT),0)
+screen = pygame.display.set_mode((HEIGHT,HEIGHT),0)
 
 # Image analysis
-lower = np.array([35,0,0])
-upper = np.array([120,200,255])
+lower = np.array([30,0,0])
+upper = np.array([50,255,255])
 
 # Analyze line function
 def analyzeLine(mask, WIDTH, HEIGHT):
@@ -37,9 +37,9 @@ def analyzeLine(mask, WIDTH, HEIGHT):
         endY = 0.6
         sum = 0
         count = 0.1
-        for x in range(0,HEIGHT):
+        for x in range(0,WIDTH):
                 for y in range(int(HEIGHT*startY),int(HEIGHT*endY)):
-                        if mask[x,y] == True:
+                        if mask[y,x] == 255:
                                 sum = sum + x
                                 count = count + 1
         
@@ -49,7 +49,7 @@ def analyzeLine(mask, WIDTH, HEIGHT):
                 average = sum / count
         
                 # standardize
-                direction = (average - (w / 2)) / (w /2) 
+                direction = (average - (WIDTH / 2)) / (WIDTH /2) 
         
                 return direction, count
         else:
@@ -98,6 +98,18 @@ with picamera.PiCamera() as camera:
                                                 auto = False
                                                 robot.driveSync(0)
                                                 robot.rotateSync(0)
+                                        if (event.key == pygame.K_7):
+                                                upper[0] = upper[0] + 5
+                                                print(upper)
+                                        if (event.key == pygame.K_u):
+                                                upper[0] = upper[0] - 5
+                                                print(upper)
+                                        if (event.key == pygame.K_j):
+                                                lower[0] = lower[0] + 5
+                                                print(lower)
+                                        if (event.key == pygame.K_m):
+                                                lower[0] = lower[0] - 5
+                                                print(lower)
                                 if event.type == pygame.KEYUP:
                                         if event.key == (pygame.K_UP):
                                                 robot.driveSync(0)
@@ -107,27 +119,30 @@ with picamera.PiCamera() as camera:
                                                 robot.rotateSync(0)
                                         if (event.key == pygame.K_RIGHT):
                                                 robot.rotateSync(0)
+                        
                         # Autonomous
                         if auto == True:
                                 
                                 # Analyze line
                                 aRes = analyzeLine(mask, WIDTH, HEIGHT)
-                                print(aRes)
+                                print(aRes)                        
                                 dir = aRes[0]
                 
                                 # Drive         
                                 if abs(dir) > 0.25:
                                         if dir > 0:
+                                                print("Rotate -1")
                                                 robot.rotateSync(-1)
-                                                sleep(0.01)
+                                                sleep(0.05)
                                                 robot.rotateSync(0)
                                         else:
+                                                print("Rotate 1")
                                                 robot.rotateSync(1)
-                                                sleep(0.01)
+                                                sleep(0.05)
                                                 robot.rotateSync(0)
                                 else: 
                                         robot.driveSync(1)
-                                        sleep(0.1)
+                                        sleep(0.2)
                                         robot.driveSync(0)
 
                         # Handle stream
