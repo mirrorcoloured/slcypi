@@ -55,10 +55,13 @@ def analyzeLine(mask, WIDTH, HEIGHT):
         else:
                 return -999, count
 
+
+        
+
 auto = False 
 done = False
 startTime = time.time()
-
+print(startTime)
 with picamera.PiCamera() as camera:
         with picamera.array.PiRGBArray(camera) as stream:
                 camera.resolution = (320, 240)
@@ -152,9 +155,9 @@ with picamera.PiCamera() as camera:
                         stream.truncate()
 
                         # Compute fps
-                        lapseTime = startTime - startTime
+                        lapseTime = (time.time() - startTime)
                         startTime = time.time()
                         if lapseTime > 0:
                                 fps = 1.0 / lapseTime
-                                print("fps: " + fps)
+                                print("fps: " + str(fps))
 
