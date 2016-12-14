@@ -30,6 +30,24 @@ screen = pygame.display.set_mode((HEIGHT,HEIGHT),0)
 lower = np.array([30,0,0])
 upper = np.array([50,255,255])
 
+def blockAnalyze(mask):
+        # Assume 320,240 image
+
+        sum = 0
+        count = 0
+        for x in range(5):
+                blockCount = np.sum(mask[x*64:x*64+63,0:243]) / 255     
+                sum = sum + blockCount * x
+                count = count + blockCount
+
+        if count > 0:
+                overallMean = float(sum) / count        
+                direction = (overallMean - 2) / 2
+                return direction, count
+        else:
+                return -999, count
+
+                                  
 # Analyze line function
 def analyzeLine(mask, WIDTH, HEIGHT):
 
@@ -72,12 +90,11 @@ with picamera.PiCamera() as camera:
                         # stream.array now contains the image data in BGR order
                 
                         # Image process
-                        frame = stream.array
-                        #frame = ndimage.rotate(frame, 90)
-                        #frame = cv2.flip("horizontal flip",frame)
+                        frame = stream.array                        
                         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)   
                         mask = cv2.inRange(hsv, lower, upper)
-                        res = cv2.bitwise_and(frame, frame, mask=mask)        
+                        res = cv2.bitwise_and(frame, frame, mask=mask)
+                        #res = cv2.transpose(res)
                         sface = pygame.surfarray.make_surface(res)                        
 
                         # Display image
@@ -130,6 +147,7 @@ with picamera.PiCamera() as camera:
                                 
                                 # Analyze line
                                 aRes = analyzeLine(mask, WIDTH, HEIGHT)
+                                #aRes = blockAnalyze(mask)
                                 print(aRes)                        
                                 dir = aRes[0]
                 
