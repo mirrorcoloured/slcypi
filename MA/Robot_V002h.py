@@ -154,6 +154,7 @@ with picamera.PiCamera() as camera:
                         # Compute fps
                         lapseTime = startTime - startTime
                         startTime = time.time()
-                        fps = 1.0 / lapseTime
-                        print("fps: " + fps)
+                        if lapseTime > 0:
+                                fps = 1.0 / lapseTime
+                                print("fps: " + fps)
 
