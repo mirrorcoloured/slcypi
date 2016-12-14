@@ -24,7 +24,7 @@ robot.correctDirections(False,False,True)
 # Initialize Pygame
 pygame.init()
 pygame.display.set_caption('My Robot')
-screen = pygame.display.set_mode((HEIGHT,HEIGHT),0)
+screen = pygame.display.set_mode((WIDTH,HEIGHT),0)
 
 # Image analysis
 lower = np.array([30,0,0])
@@ -32,11 +32,11 @@ upper = np.array([50,255,255])
 
 def blockAnalyze(mask):
         # Assume 320,240 image
-
+        mask = np.transpose(mask)
         sum = 0
         count = 0
         for x in range(5):
-                blockCount = np.sum(mask[x*64:x*64+63,0:243]) / 255     
+                blockCount = np.sum(mask[x*64:x*64+63,0:100]) / 255     
                 sum = sum + blockCount * x
                 count = count + blockCount
 
@@ -91,10 +91,11 @@ with picamera.PiCamera() as camera:
                 
                         # Image process
                         frame = stream.array                        
-                        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)   
+                        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+                        #hsv = cv2.transpose(hsv)
                         mask = cv2.inRange(hsv, lower, upper)
                         res = cv2.bitwise_and(frame, frame, mask=mask)
-                        #res = cv2.transpose(res)
+                        res = cv2.transpose(res)
                         sface = pygame.surfarray.make_surface(res)                        
 
                         # Display image
@@ -141,13 +142,16 @@ with picamera.PiCamera() as camera:
                                                 robot.rotateSync(0)
                                         if (event.key == pygame.K_RIGHT):
                                                 robot.rotateSync(0)
+
+                        #aRes = blockAnalyze(mask)
+                        #print(aRes)  
                         
                         # Autonomous
                         if auto == True:
                                 
                                 # Analyze line
-                                aRes = analyzeLine(mask, WIDTH, HEIGHT)
-                                #aRes = blockAnalyze(mask)
+                                #aRes = analyzeLine(mask, WIDTH, HEIGHT)
+                                aRes = blockAnalyze(mask)
                                 print(aRes)                        
                                 dir = aRes[0]
                 
@@ -155,19 +159,26 @@ with picamera.PiCamera() as camera:
                                 if abs(dir) > 0.25:
                                         if dir > 0:
                                                 print("Rotate -1")
+                                                #robot.driveSync(0)
                                                 robot.rotateSync(-1)
                                                 sleep(0.05)
                                                 robot.rotateSync(0)
                                         else:
                                                 print("Rotate 1")
+                                                #robot.driveSync(0)
                                                 robot.rotateSync(1)
                                                 sleep(0.05)
                                                 robot.rotateSync(0)
                                 else: 
+                                        #robot.rotateSync(0)
                                         robot.driveSync(1)
-                                        sleep(0.2)
+                                        sleep(0.1)
                                         robot.driveSync(0)
-
+                                #if aRes[1] > 5000:
+                                #        robot.driveSync(1)
+                                #else:
+                                #        robot.driveSync(0)
+                                        
                         # Handle stream
                         stream.seek(0)
                         stream.truncate()
