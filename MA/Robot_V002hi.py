@@ -27,8 +27,8 @@ pygame.display.set_caption('My Robot')
 screen = pygame.display.set_mode((WIDTH,HEIGHT),0)
 
 # Image analysis
-lower = np.array([30,0,0])
-upper = np.array([50,255,255])
+lower = np.array([25,0,0])
+upper = np.array([40,255,255])
 
 def blockAnalyze(mask):
         # Assume 320,240 image
@@ -157,10 +157,10 @@ with picamera.PiCamera() as camera:
                                 count = aRes[1]
                 
                                 # Drive         
-                                if abs(dir) > 0.25:
-                                        rotateSpeed = 50
+                                if abs(dir) > 0.20:
+                                        rotateSpeed = 60
                                         if abs(dir) > 0.5:
-                                                rotateSpeed = 60
+                                                rotateSpeed = 80
                                         if dir > 0:
                                                 print("Rotate -1")
                                                 #robot.driveSync(0)
@@ -178,12 +178,15 @@ with picamera.PiCamera() as camera:
                                         #robot.driveSync(1)
                                         #sleep(0.1)
                                         #robot.driveSync(0)
-                                relCount = (1 - abs(dir)) * count
-                                driveSpeed = relCount / 4000 * 50
-                                if driveSpeed > 50 :                                        
-                                        robot.driveSync(1, driveSpeed)
+                                if dir > -999:
+                                        relCount = (1 - abs(dir)) * count
+                                        driveSpeed = int(relCount / 3000 * 50)
+                                        if driveSpeed > 50 :                                        
+                                                robot.driveSync(1, driveSpeed)
+                                        else:
+                                                robot.driveSync(0)
                                 else:
-                                        robot.driveSync(0)                                
+                                        robot.driveSync(0)
                                         
                         # Handle stream
                         stream.seek(0)
