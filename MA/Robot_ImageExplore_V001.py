@@ -13,7 +13,7 @@ from time import sleep
 
 # Settings
 WIDTH = 160
-HEIGHT = 120
+HEIGHT = WIDTH * 0.75
 
 # Initialize Pygame
 pygame.init()
@@ -24,76 +24,60 @@ screen = pygame.display.set_mode((WIDTH,HEIGHT),0)
 lower = np.array([25,0,0])
 upper = np.array([40,255,255])
 
-def blockAnalyze(mask):
-        # Assume 320,240 image
-        mask = np.transpose(mask)
-        sum = 0
-        count = 0
-        for x in range(5):
-                blockCount = np.sum(mask[x*64:x*64+63,0:100]) / 255     
-                sum = sum + blockCount * x
-                count = count + blockCount
+def applyColorFilter(frame):
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(hsv, lower, upper)
+        res = cv2.bitwise_and(frame, frame, mask=mask)
+        return(res)
 
-        if count > 0:
-                overallMean = float(sum) / count        
-                direction = (overallMean - 2) / 2
-                return direction, count
-        else:
-                return -999, count
+def smooth(img):
+        kernel = np.ones((15,15),np.float32)/225
+        smoothed = cv2.filter2D(img,-1,kernel)
+        return(smoothed)
 
-                                  
-# Analyze line function
-def analyzeLine(mask, WIDTH, HEIGHT):
+def blurring(img):
+        blur = cv2.GaussianBlur(img,(15,15),0)
+        return(blur)
 
-        startY = 0.4
-        endY = 0.6
-        sum = 0
-        count = 0.1
-        for x in range(0,WIDTH):
-                for y in range(int(HEIGHT*startY),int(HEIGHT*endY)):
-                        if mask[y,x] == 255:
-                                sum = sum + x
-                                count = count + 1
-        
-        if count > 5:
+def medianBlurring(img):
+        median = cv2.medianBlur(img,15)
+        return(median)
 
-                # Compute average
-                average = sum / count
-        
-                # standardize
-                direction = (average - (WIDTH / 2)) / (WIDTH /2) 
-        
-                return direction, count
-        else:
-                return -999, count
+def bilateralBlur(img):
+        bilateral = cv2.bilateralFilter(img,15,75,75)
+        return(bilateral)
+
+doApplyColorFilter = False
+doSmooth = False
 
 done = False
 startTime = time.time()
 print(startTime)
 with picamera.PiCamera() as camera:
         with picamera.array.PiRGBArray(camera) as stream:
-                camera.resolution = (320, 240)
+                camera.resolution = (WIDTH, HEIGHT)
 
                 while done == False:
                         
                         camera.capture(stream, 'bgr', use_video_port=True)
-                        # stream.array now contains the image data in BGR order
-                
-                        # Image process
-                        frame = stream.array                        
-                        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-                        mask = cv2.inRange(hsv, lower, upper)
-                        res = cv2.bitwise_and(frame, frame, mask=mask)
+                        frame = stream.array
+
+                        if doApplyColorFilter == True:
+                                frame = applyColorFilter(frame)
+                        if doSmooth == True:
+                                frame = smooth(frame)
+                   
+                        # Display image
                         res = cv2.transpose(res)
                         sface = pygame.surfarray.make_surface(res)                        
-
-                        # Display image
                         screen.blit(sface,(0,0))
                         pygame.display.update()            
                         
                         # User events
                         for event in pygame.event.get():
                                 if event.type == pygame.KEYDOWN:
+
+                                        # Adjust hue
                                         if (event.key == pygame.K_ESCAPE):
                                                 done = True
                                         if (event.key == pygame.K_7):
@@ -108,10 +92,20 @@ with picamera.PiCamera() as camera:
                                         if (event.key == pygame.K_m):
                                                 lower[0] = lower[0] - 5
                                                 print(lower)
-                        #        if event.type == pygame.KEYUP:
-                        #aRes = blockAnalyze(mask)
-                        #print(aRes)  
-                        
+
+                                        # Select filter
+                                        if (event.key == pygame.K.q):
+                                                if doApplyColorFilter == True:
+                                                        doApplyColorFilter = False
+                                                else:
+                                                        doApplyColorFilter = True
+
+                                        if (event.key == pygame.K.w):
+                                                if doSmooth == True:
+                                                        doSmooth = False
+                                                else:
+                                                        doSmooth = True  
+                                        
                         # Handle stream
                         stream.seek(0)
                         stream.truncate()
