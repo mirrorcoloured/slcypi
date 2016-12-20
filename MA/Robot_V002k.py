@@ -25,7 +25,7 @@ robot.correctDirections(True,True,True)
 # Initialize ImageAnalysis
 IA = ImageAnalysis()
 IA.filterLower = np.array([25,35,70])
-IA.filterUpper = np.array([75,255,205])
+IA.filterUpper = np.array([65,255,205])
 
 # Initialize Pygame
 pygame.init()
@@ -35,8 +35,15 @@ screen = pygame.display.set_mode((WIDTH,HEIGHT),0)
 # Start settings
 auto = False 
 done = False
-view = "colorFilter"
+viewOptions = ["noFilter","colorFilter","lineDetection"]
+viewNr = 1
 startTime = time.time()
+
+def toggleView(viewNr):
+        viewNr = viewNr + 1
+        if viewNr > 2:
+               viewNr = 0
+        return(viewNr)
 
 with picamera.PiCamera() as camera:
         with picamera.array.PiRGBArray(camera) as stream:
@@ -50,7 +57,9 @@ with picamera.PiCamera() as camera:
                         
                         # Image process
                         res, mask = IA.colorFilter(bgr, False, False)
-                        if view == "lineDetection":
+                        if viewOptions[viewNr] == "noFilter":
+                                res = bgr
+                        if viewOptions[viewNr] == "lineDetection":
                                 res = IA.edgeDetection(bgr)
                         
                         # Image transpose
@@ -72,11 +81,8 @@ with picamera.PiCamera() as camera:
 
                                         # View toggle
                                         if event.key == (pygame.K_v):
-                                                if view =="colorFilter":
-                                                        view = "lineDetection"
-                                                else:
-                                                        view = "colorFilter"
-
+                                                viewNr = toggleView(viewNr)
+                                                
                                         # Drive commands
                                         if event.key == (pygame.K_UP):
                                                 robot.driveSync(1)

@@ -17,7 +17,7 @@ class ImageAnalysis():
                 # Set starting values
                 WITDH = 320
                 HEIGHT = 240
-                filterLower = np.array([25,0,0])
+                filterLower = np.array([5,0,0])
                 filterUpper = np.array([75,255,255])
                 blockAnalyseYstart = 0
                 blockAnalyseYend = 100
@@ -64,7 +64,7 @@ class ImageAnalysis():
                 count = 0
                 for x in range(5):
                         #self.blockAnalyseYstart:self.blockAnalyseYend
-                        blockCount = np.sum(mask[x*64:x*64+63,50:150]) / 255     
+                        blockCount = np.sum(mask[x*64:x*64+63,140:240]) / 255     
                         sum = sum + blockCount * x
                         count = count + blockCount
 
