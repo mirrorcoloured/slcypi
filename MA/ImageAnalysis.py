@@ -17,8 +17,8 @@ class ImageAnalysis():
                 # Set starting values
                 WITDH = 320
                 HEIGHT = 240
-                filterLower = np.array([25,35,70])
-                filterUpper = np.array([75,255,205])
+                filterLower = np.array([25,0,0])
+                filterUpper = np.array([75,255,255])
                 blockAnalyseYstart = 0
                 blockAnalyseYend = 100
 
@@ -38,7 +38,7 @@ class ImageAnalysis():
                 if dilate == True:
                         kernel = np.ones((5,5),np.uint8)
                         mask = cv2.dilate(mask,kernel,iterations = 1)
-                res = cv2.bitwise_and(frame, frame, mask=mask)
+                res = cv2.bitwise_and(bgr, bgr, mask=mask)
                 return(res, mask)
         
         def smooth(self,img):
@@ -63,7 +63,8 @@ class ImageAnalysis():
                 sum = 0
                 count = 0
                 for x in range(5):
-                        blockCount = np.sum(mask[x*64:x*64+63,self.blockAnalyseYstart:blockAnalyseYend]) / 255     
+                        #self.blockAnalyseYstart:self.blockAnalyseYend
+                        blockCount = np.sum(mask[x*64:x*64+63,50:150]) / 255     
                         sum = sum + blockCount * x
                         count = count + blockCount
 

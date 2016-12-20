@@ -35,7 +35,9 @@ screen = pygame.display.set_mode((WIDTH,HEIGHT),0)
 # Start settings
 auto = False 
 done = False
+view = "colorFilter"
 startTime = time.time()
+
 with picamera.PiCamera() as camera:
         with picamera.array.PiRGBArray(camera) as stream:
                 camera.resolution = (WIDTH, HEIGHT)
@@ -47,8 +49,10 @@ with picamera.PiCamera() as camera:
                         bgr = stream.array                        
                         
                         # Image process
-                        res, maks = IA.colorFilter(bgr, False, False)
-
+                        res, mask = IA.colorFilter(bgr, False, False)
+                        if view == "lineDetection":
+                                res = IA.edgeDetection(bgr)
+                        
                         # Image transpose
                         res = cv2.transpose(res)
                         mask = np.transpose(mask)
@@ -61,8 +65,19 @@ with picamera.PiCamera() as camera:
                         # User events
                         for event in pygame.event.get():
                                 if event.type == pygame.KEYDOWN:
+
+                                        # Exit on escape                                
                                         if (event.key == pygame.K_ESCAPE):
                                                 done = True
+
+                                        # View toggle
+                                        if event.key == (pygame.K_v):
+                                                if view =="colorFilter":
+                                                        view = "lineDetection"
+                                                else:
+                                                        view = "colorFilter"
+
+                                        # Drive commands
                                         if event.key == (pygame.K_UP):
                                                 robot.driveSync(1)
                                         if event.key == (pygame.K_DOWN):
@@ -160,7 +175,7 @@ with picamera.PiCamera() as camera:
                                         #robot.driveSync(0)
                                 if dir > -999:
                                         relCount = (1 - abs(dir)) * count
-                                        driveSpeed = int(relCount / 3000 * 50)
+                                        driveSpeed = int(relCount / 1200 * 50)
                                         if driveSpeed > 45 :                                        
                                                 robot.driveSync(1, driveSpeed)
                                         else:
