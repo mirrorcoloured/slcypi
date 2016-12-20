@@ -19,7 +19,7 @@ HEIGHT = 240
 
 # Initialize Tank
 robot = Tank()
-robot.correctDirections(False,False,True)
+robot.correctDirections(True,True,True)
 
 # Initialize Pygame
 pygame.init()
