@@ -35,8 +35,8 @@ screen = pygame.display.set_mode((WIDTH,HEIGHT),0)
 # Start settings
 auto = False 
 done = False
-viewOptions = ["noFilter","colorFilter","lineDetection","featureMatch","opticalFlow"]
-viewNr = 1
+viewOptions = ["noFilter","colorFilter","lineDetection","opticalFlow","featureMatch"]
+viewNr = 0
 startTime = time.time()
 
 def toggleView(viewNr):
@@ -48,16 +48,9 @@ def toggleView(viewNr):
 
 with picamera.PiCamera() as camera:
         with picamera.array.PiRGBArray(camera) as stream:
-                camera.resolution = (WIDTH, HEIGHT)
-
-                        # Image capture (previous)
-                        camera.capture(stream, 'bgr', use_video_port=True)
-                        previous = stream.array
-
-                        # Create hsv required for optical flow
-                        hsv = np.zeros_like(previous)
-                        hsv[...,1] = 255
-
+                camera.resolution = (WIDTH, HEIGHT)                
+                                
+                print("HI")
                 while done == False:
 
                         # Image capture
@@ -71,10 +64,10 @@ with picamera.PiCamera() as camera:
                         if viewOptions[viewNr] == "lineDetection":
                                 res = IA.edgeDetection(bgr)
                         if viewOptions[viewNr] == "featureMatch":                                
-                                res = IA.featureMatch(bgr,previous):
+                                res = IA.featureMatch(bgr,previous)
                                 previous = current
                         if viewOptions[viewNr] == "opticalFlow":
-                                res = IA.opticalFlow(current,previous, hsv)
+                                res = IA.opticalFlow(bgr,previous, hsv)
                                 previous = current
                         
                         # Image transpose
@@ -97,6 +90,11 @@ with picamera.PiCamera() as camera:
                                         # View toggle
                                         if event.key == (pygame.K_v):
                                                 viewNr = toggleView(viewNr)
+
+                                                # Create hsv required for optical flow
+                                                previous = bgr
+                                                hsv = np.zeros_like(previous)
+                                                hsv[...,1] = 255
                                                 
                                         # Drive commands
                                         if event.key == (pygame.K_UP):
