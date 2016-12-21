@@ -22,6 +22,17 @@ class ImageAnalysis():
                 blockAnalyseYstart = 0
                 blockAnalyseYend = 100
 
+        def featureMatch(current,previous):
+                orb = cv2.ORB_create()
+                cv2.ocl.setUseOpenCL(False)
+                kp1, des1 = orb.detectAndCompute(current,None)
+                kp2, des2 = orb.detectAndCompute(previous,None)
+                bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+                matches = bf.match(des1,des2)
+                matches = sorted(matches, key = lambda x:x.distance)
+                res = cv2.drawMatches(current,kp1,previous,kp2,matches[:10],None, flags=2)
+                return(res)
+        
         def edgeDetection(self, bgr):
                 laplacian = cv2.Laplacian(bgr,cv2.CV_64F)
                 return(laplacian)
