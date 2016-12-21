@@ -1,8 +1,8 @@
 
 # Import statements
-import pygame
-import pygame.camera
-from PIL import Image
+#import pygame
+#import pygame.camera
+#from PIL import Image
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,7 +22,17 @@ class ImageAnalysis():
                 blockAnalyseYstart = 0
                 blockAnalyseYend = 100
 
-        def featureMatch(current,previous):
+        def opticalFlow(self, current, previous, hsv):
+                prvs = cv2.cvtColor(previous,cv2.COLOR_BGR2GRAY)
+                next = cv2.cvtColor(current,cv2.COLOR_BGR2GRAY)
+                flow = cv2.calcOpticalFlowFarneback(prvs,next, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+                mag, ang = cv2.cartToPolar(flow[...,0], flow[...,1])
+                hsv[...,0] = ang*180/np.pi/2
+                hsv[...,2] = cv2.normalize(mag,None,0,255,cv2.NORM_MINMAX)
+                bgr = cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
+                return(bgr)
+        
+        def featureMatch(self,current,previous):
                 orb = cv2.ORB_create()
                 cv2.ocl.setUseOpenCL(False)
                 kp1, des1 = orb.detectAndCompute(current,None)
@@ -30,8 +40,9 @@ class ImageAnalysis():
                 bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
                 matches = bf.match(des1,des2)
                 matches = sorted(matches, key = lambda x:x.distance)
-                res = cv2.drawMatches(current,kp1,previous,kp2,matches[:10],None, flags=2)
-                return(res)
+                res = cv2.drawMatches(current,kp1,previous,kp2,matches[:],None, flags=2)
+                res = cv2.resize(res, (320,240))
+                return(res)                
         
         def edgeDetection(self, bgr):
                 laplacian = cv2.Laplacian(bgr,cv2.CV_64F)
