@@ -99,43 +99,43 @@ with picamera.PiCamera() as camera:
                                                 robot.driveSync(0)
                                                 robot.rotateSync(0)
                                         if (event.key == pygame.K_7):
-                                                upper[0] = upper[0] + 5
-                                                print(upper)
+                                                IA.filterUpper[0] = IA.filterUpper[0] + 5
+                                                print(IA.filterUpper)
                                         if (event.key == pygame.K_u):
-                                                upper[0] = upper[0] - 5
-                                                print(upper)
+                                                IA.filterUpper[0] = IA.filterUpper[0] - 5
+                                                print(IA.filterUpper)
                                         if (event.key == pygame.K_j):
-                                                lower[0] = lower[0] + 5
-                                                print(lower)
+                                                IA.filterLower[0] = IA.filterLower[0] + 5
+                                                print(IA.filterLower)
                                         if (event.key == pygame.K_m):
-                                                lower[0] = lower[0] - 5
-                                                print(lower)
+                                                IA.filterLower[0] = IA.filterLower[0] - 5
+                                                print(IA.filterLower)
 
                                         if (event.key == pygame.K_8):
-                                                upper[1] = upper[1] + 5
-                                                print(upper)
+                                                IA.filterUpper[1] = IA.filterUpper[1] + 5
+                                                print(IA.filterUpper)
                                         if (event.key == pygame.K_i):
-                                                upper[1] = upper[1] - 5
-                                                print(upper)
+                                                IA.filterUpper[1] = IA.filterUpper[1] - 5
+                                                print(IA.filterUpper)
                                         if (event.key == pygame.K_k):
-                                                lower[1] = lower[1] + 5
-                                                print(lower)
+                                                IA.filterLower[1] = IA.filterLower[1] + 5
+                                                print(IA.filterLower)
                                         if (event.key == pygame.K_COMMA):
-                                                lower[1] = lower[1] - 5
-                                                print(lower)
+                                                IA.filterLower[1] = IA.filterLower[1] - 5
+                                                print(IA.filterLower)
 
                                         if (event.key == pygame.K_9):
-                                                upper[2] = upper[2] + 5
-                                                print(upper)
+                                                IA.filterUpper[2] = IA.filterUpper[2] + 5
+                                                print(IA.filterUpper)
                                         if (event.key == pygame.K_o):
-                                                upper[2] = upper[2] - 5
-                                                print(upper)
+                                                IA.filterUpper[2] = IA.filterUpper[2] - 5
+                                                print(IA.filterUpper)
                                         if (event.key == pygame.K_l):
-                                                lower[2] = lower[2] + 5
-                                                print(lower)
+                                                IA.filterLower[2] = IA.filterLower[2] + 5
+                                                print(IA.filterLower)
                                         if (event.key == pygame.K_PERIOD):
-                                                lower[2] = lower[2] - 5
-                                                print(lower)
+                                                IA.filterLower[2] = IA.filterLower[2] - 5
+                                                print(IA.filterLower)
                                                 
                                 if event.type == pygame.KEYUP:
                                         if event.key == (pygame.K_UP):
@@ -159,29 +159,26 @@ with picamera.PiCamera() as camera:
                 
                                 # Drive         
                                 if abs(dir) > 0.20:
-                                        rotateSpeed = 50
+                                        rotateSpeed = 60
                                         if abs(dir) > 0.5:
-                                                rotateSpeed = 70
+                                                rotateSpeed = 80
                                         if dir > 0:
                                                 print("Rotate -1")
-                                                #robot.driveSync(0)
                                                 robot.rotateSync(-1, rotateSpeed)
                                                 sleep(0.05)
                                                 robot.rotateSync(0)
                                         else:
                                                 print("Rotate 1")
-                                                #robot.driveSync(0)
                                                 robot.rotateSync(1, rotateSpeed)
                                                 sleep(0.05)
                                                 robot.rotateSync(0)
-                                #else: 
-                                        ##robot.rotateSync(0)
-                                        #robot.driveSync(1)
-                                        #sleep(0.1)
-                                        #robot.driveSync(0)
+                                
                                 if dir > -999:
                                         relCount = (1 - abs(dir)) * count
-                                        driveSpeed = int(relCount / 1200 * 50)
+                                        if count > 800:
+                                                driveSpeed = 50
+                                        if count > 10000:
+                                                driveSpeed = int(relCount / 10000 * 50)
                                         if driveSpeed > 45 :                                        
                                                 robot.driveSync(1, driveSpeed)
                                         else:

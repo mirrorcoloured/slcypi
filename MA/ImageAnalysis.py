@@ -75,7 +75,7 @@ class ImageAnalysis():
                 count = 0
                 for x in range(5):
                         #self.blockAnalyseYstart:self.blockAnalyseYend
-                        blockCount = np.sum(mask[x*64:x*64+63,140:240]) / 255     
+                        blockCount = np.sum(mask[x*64:x*64+63,0:200]) / 255     
                         sum = sum + blockCount * x
                         count = count + blockCount
 
