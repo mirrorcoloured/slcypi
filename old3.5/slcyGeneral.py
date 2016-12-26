@@ -1,4 +1,4 @@
-# Python 2.7.1
+# Python 3.5.1
 
 import RPi.GPIO as GPIO
 from twython import Twython
@@ -18,20 +18,20 @@ applepislcy = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
 def Cleanup():
     GPIO.cleanup()
 
-def Sleep(seconds):
+def Sleep(seconds) -> None:
     """Puts the program to sleep"""
     time.sleep(seconds)
 
-def Alert(channel):
+def Alert(channel) -> None:
     """Simple alert function for testing event interrupts"""
     print('Alert on channel',channel)
 
-def TimeString():
+def TimeString() -> str:
     """Returns the current time"""
     t = time.localtime()
     return str(t[0])+'.'+str(t[1])+'.'+str(t[2])+'.'+str(t[3])+'.'+str(t[4])+'.'+str(t[5])
 
-def LoadPins(mapping,inp):
+def LoadPins(mapping,inp) -> dict:
     """Organizes an input into a pin mapping dict
     mapping <list>, ['IA','IB']
     inp <dict>, <list>, <int> {'IA':1,'IB':2}, [1,2]
@@ -114,7 +114,7 @@ def InputLoopDemo():
 
 ### TWITTER ###
 
-def Tweet(twit,statustext):
+def Tweet(twit,statustext) -> None:
     """Tweets a message
     twit <Twython>, create with Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
     statustext <str>, must be <= 140 characters
@@ -124,7 +124,7 @@ def Tweet(twit,statustext):
     else:
         twit.update_status(status=statustext)
 
-def TweetPicture(twit,file,statustext):
+def TweetPicture(twit,file,statustext) -> None:
     """Tweets a message with a picture
     twit <Twython>, create with Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
     file <str>, path and filename to picture
@@ -134,7 +134,7 @@ def TweetPicture(twit,file,statustext):
     response = twitter.upload_media(media=photo)
     twit.update_status(status=statustext, media_ids=[response['media_id']])
 
-def TweetVideo(twit,file,statustext):
+def TweetVideo(twit,file,statustext) -> None:
     """Tweets a message with a video
     twit <Twython>, create with Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
     file <str>, path and filename to video
