@@ -41,7 +41,7 @@ startTime = time.time()
 
 def toggleView(viewNr):
         viewNr = viewNr + 1
-        if viewNr > 4:
+        if viewNr > 2:
                viewNr = 0
         print(viewOptions[viewNr])
         return(viewNr)
@@ -172,9 +172,11 @@ with picamera.PiCamera() as camera:
                 
                                 # Drive         
                                 if abs(dir) > 0.20:
-                                        rotateSpeed = 60
+                                        rotateSpeed = 50
                                         if abs(dir) > 0.5:
                                                 rotateSpeed = 80
+                                        if abs(dir) > 0.75:
+                                                rotateSpeed = 90
                                         if dir > 0:
                                                 print("Rotate -1")
                                                 robot.rotateSync(-1, rotateSpeed)
@@ -190,8 +192,9 @@ with picamera.PiCamera() as camera:
                                         relCount = (1 - abs(dir)) * count
                                         if count > 800:
                                                 driveSpeed = 50
-                                        if count > 10000:
-                                                driveSpeed = int(relCount / 10000 * 50)
+                                        if count > 8000:
+                                                driveSpeed = int(relCount / 8000 * 50)
+                                                print(driveSpeed)
                                         if driveSpeed > 45 :                                        
                                                 robot.driveSync(1, driveSpeed)
                                         else:
