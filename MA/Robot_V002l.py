@@ -27,6 +27,26 @@ IA = ImageAnalysis()
 IA.filterLower = np.array([25,35,70])
 IA.filterUpper = np.array([65,255,205])
 
+face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
+
+
+
+def faceDetection(bgr):
+        gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+
+        for (x,y,w,h) in faces:
+                cv2.rectangle(bgr,(x,y),(x+w,y+h),(255,0,0),2)
+                roi_gray = gray[y:y+h, x:x+w]
+                roi_color = bgr[y:y+h, x:x+w]
+
+                eyes = eye_cascade.detectMultiScale(roi_gray)
+                for (ex,ey,ew,eh) in eyes:
+                        cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
+    
+        return(faces,bgr)
+
 # Initialize Pygame
 pygame.init()
 pygame.display.set_caption('My Robot')
@@ -64,7 +84,7 @@ with picamera.PiCamera() as camera:
                         if viewOptions[viewNr] == "lineDetection":
                                 res = IA.edgeDetection(bgr)
                         if viewOptions[viewNr] == "faceDetection":
-                                faces, res = IA.faceDetection(bgr)
+                                faces, res = faceDetection(bgr)
                         if viewOptions[viewNr] == "featureMatch":                                
                                 res = IA.featureMatch(bgr,previous)
                                 previous = current
