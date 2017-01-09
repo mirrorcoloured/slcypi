@@ -22,10 +22,25 @@ class ImageAnalysis():
                 blockAnalyseYstart = 0
                 blockAnalyseYend = 100
 
+        def faceDetection(self, bgr):
+                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+
+                for (x,y,w,h) in faces:
+                        cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
+                        roi_gray = gray[y:y+h, x:x+w]
+                        roi_color = img[y:y+h, x:x+w]
+
+                        eyes = eye_cascade.detectMultiScale(roi_gray)
+                        for (ex,ey,ew,eh) in eyes:
+                                cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
+    
+                return(faces,img)
+
         def opticalFlow(self, current, previous, hsv):
                 prvs = cv2.cvtColor(previous,cv2.COLOR_BGR2GRAY)
                 next = cv2.cvtColor(current,cv2.COLOR_BGR2GRAY)
-                flow = cv2.calcOpticalFlowFarneback(prvs,next, None, 0.5, 3.0, 15.0, 3.0, 5.0, 1.2, 0.0)
+                flow = cv2.calcOpticalFlowFarneback(prvs,next, None, 0.5, 3, 15, 3, 5, 1.2, 0)
                 mag, ang = cv2.cartToPolar(flow[...,0], flow[...,1])
                 hsv[...,0] = ang*180/np.pi/2
                 hsv[...,2] = cv2.normalize(mag,None,0,255,cv2.NORM_MINMAX)
@@ -33,9 +48,9 @@ class ImageAnalysis():
                 return(bgr)
         
         def featureMatch(self,current,previous):
-                #orb = cv2.ORB_create()
+                orb = cv2.ORB_create()
                 orb = cv2.ORB()
-                #cv2.ocl.setUseOpenCL(False)
+                cv2.ocl.setUseOpenCL(False)
                 kp1, des1 = orb.detectAndCompute(current,None)
                 kp2, des2 = orb.detectAndCompute(previous,None)
                 bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)

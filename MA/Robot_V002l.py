@@ -35,13 +35,13 @@ screen = pygame.display.set_mode((WIDTH,HEIGHT),0)
 # Start settings
 auto = False 
 done = False
-viewOptions = ["noFilter","colorFilter","lineDetection","opticalFlow","featureMatch"]
+viewOptions = ["noFilter","colorFilter","lineDetection","faceDetection","opticalFlow","featureMatch"]
 viewNr = 0
 startTime = time.time()
 
 def toggleView(viewNr):
         viewNr = viewNr + 1
-        if viewNr > 2:
+        if viewNr > 3:
                viewNr = 0
         print(viewOptions[viewNr])
         return(viewNr)
@@ -63,6 +63,8 @@ with picamera.PiCamera() as camera:
                                 res = bgr
                         if viewOptions[viewNr] == "lineDetection":
                                 res = IA.edgeDetection(bgr)
+                        if viewOptions[viewNr] == "faceDetection":
+                                faces, res = IA.faceDetection(bgr)
                         if viewOptions[viewNr] == "featureMatch":                                
                                 res = IA.featureMatch(bgr,previous)
                                 previous = current
