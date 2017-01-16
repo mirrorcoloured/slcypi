@@ -26,7 +26,7 @@ def turnOffMotors(self):
         mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
         mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
 
-atexit.register(turnOffMotors)
+#atexit.register(turnOffMotors)
 
 m1 = mh.getMotor(1)
 m2 = mh.getMotor(2)
@@ -91,7 +91,7 @@ with picamera.PiCamera() as camera:
  #                       faces, res = faceDetection(bgr)
                         
                         # Image transpose
-                        res = cv2.transpose(res)
+                        res = cv2.transpose(bgr)
                    
                         # Image display
                         sface = pygame.surfarray.make_surface(res)                        
@@ -109,16 +109,16 @@ with picamera.PiCamera() as camera:
                                         # Drive commands
                                         if event.key == (pygame.K_UP):
                                                 m2.run(Adafruit_MotorHAT.FORWARD)
-                                                m2.setSpeed(60)
+                                                m2.setSpeed(120)
                                         if event.key == (pygame.K_DOWN):
                                                 m2.run(Adafruit_MotorHAT.BACKWARD)
-                                                m2.setSpeed(60)
+                                                m2.setSpeed(120)
                                         if (event.key == pygame.K_LEFT):
                                                 m1.run(Adafruit_MotorHAT.FORWARD)
-                                                m1.setSpeed(60)
+                                                m1.setSpeed(120)
                                         if (event.key == pygame.K_RIGHT):
                                                 m1.run(Adafruit_MotorHAT.BACKWARD)
-                                                m1.setSpeed(60)
+                                                m1.setSpeed(120)
                                 if event.type == pygame.KEYUP:
                                         if event.key == (pygame.K_UP):
                                                 m2.run(Adafruit_MotorHAT.RELEASE)
@@ -134,11 +134,11 @@ with picamera.PiCamera() as camera:
                         stream.truncate()
 
                         # Compute fps
-                        lapseTime = (time.time() - startTime)
-                        startTime = time.time()
-                        if lapseTime > 0:
-                                fps = 1.0 / lapseTime
-                                print("fps: " + str(fps))
+                        #lapseTime = (time.time() - startTime)
+                        #startTime = time.time()
+                        #if lapseTime > 0:
+                        #        fps = 1.0 / lapseTime
+                        #        print("fps: " + str(fps))
 
 robot.stop()
 pygame.quit()
