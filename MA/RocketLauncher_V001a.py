@@ -14,21 +14,34 @@ import pygame
 from scipy import ndimage
 from time import sleep
 
+from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor
+
+mh = Adafruit_MotorHAT(addr=0x60)
+leftMotor = mh.getMotor(1)
+rightMotor = mh.getMotor(2)
+        
+def turnOffMotors(self):
+        mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
+        mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
+        mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
+        mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
+
+atexit.register(turnOffMotors)
+
+m1 = mh.getMotor(1)
+m2 = mh.getMotor(2)
+
 # Settings
 WIDTH = 320
 HEIGHT = 240
-
-# Initialize Tank
-robot = Tank()
-robot.correctDirections(True,True,True)
 
 # Initialize ImageAnalysis
 IA = ImageAnalysis()
 IA.filterLower = np.array([25,35,70])
 IA.filterUpper = np.array([65,255,205])
 
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
+#face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+#eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
 
 def faceDetection(bgr):
         gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
@@ -51,18 +64,7 @@ pygame.display.set_caption('My Robot')
 screen = pygame.display.set_mode((WIDTH,HEIGHT),0)
 
 # Start settings
-auto = False 
 done = False
-viewOptions = ["noFilter","colorFilter","lineDetection","faceDetection","opticalFlow","featureMatch"]
-viewNr = 3
-startTime = time.time()
-
-def toggleView(viewNr):
-        viewNr = viewNr + 1
-        if viewNr > 3:
-               viewNr = 0
-        print(viewOptions[viewNr])
-        return(viewNr)
 
 def aim(faces):
         for (x,y,w,h) in faces:
@@ -79,7 +81,6 @@ with picamera.PiCamera() as camera:
         with picamera.array.PiRGBArray(camera) as stream:
                 camera.resolution = (WIDTH, HEIGHT)                
                                 
-                print("HI")
                 while done == False:
 
                         # Image capture
@@ -87,25 +88,11 @@ with picamera.PiCamera() as camera:
                         bgr = stream.array                        
                         
                         # Image process
-                        res, mask = IA.colorFilter(bgr, False, False)
-                        if viewOptions[viewNr] == "noFilter":
-                                res = bgr
-                        if viewOptions[viewNr] == "lineDetection":
-                                res = IA.edgeDetection(bgr)
-                        if viewOptions[viewNr] == "faceDetection":
-                                faces, res = faceDetection(bgr)
-                                aim(faces)
-                        if viewOptions[viewNr] == "featureMatch":                                
-                                res = IA.featureMatch(bgr,previous)
-                                previous = current
-                        if viewOptions[viewNr] == "opticalFlow":
-                                res = IA.opticalFlow(bgr,previous, hsv)
-                                previous = current
+ #                       faces, res = faceDetection(bgr)
                         
                         # Image transpose
                         res = cv2.transpose(res)
-                        mask = np.transpose(mask)
-
+                   
                         # Image display
                         sface = pygame.surfarray.make_surface(res)                        
                         screen.blit(sface,(0,0))
@@ -119,121 +106,29 @@ with picamera.PiCamera() as camera:
                                         if (event.key == pygame.K_ESCAPE):
                                                 done = True
 
-                                        # View toggle
-                                        if event.key == (pygame.K_v):
-                                                viewNr = toggleView(viewNr)
-
-                                                # Create hsv required for optical flow
-                                                previous = bgr
-                                                hsv = np.zeros_like(previous)
-                                                hsv[...,1] = 255
-                                                
                                         # Drive commands
                                         if event.key == (pygame.K_UP):
-                                                robot.driveSync(1)
+                                                m2.run(Adafruit_MotorHAT.FORWARD)
+                                                m2.setSpeed(60)
                                         if event.key == (pygame.K_DOWN):
-                                                robot.driveSync(-1)
+                                                m2.run(Adafruit_MotorHAT.BACKWARD)
+                                                m2.setSpeed(60)
                                         if (event.key == pygame.K_LEFT):
-                                                robot.rotateSync(1,45)
+                                                m1.run(Adafruit_MotorHAT.FORWARD)
+                                                m1.setSpeed(60)
                                         if (event.key == pygame.K_RIGHT):
-                                                robot.rotateSync(-1,45)                                        
-                                        if (event.key == pygame.K_q):
-                                                auto = True
-                                        if (event.key == pygame.K_w):
-                                                auto = False
-                                                robot.driveSync(0)
-                                                robot.rotateSync(0)
-                                        if (event.key == pygame.K_7):
-                                                IA.filterUpper[0] = IA.filterUpper[0] + 5
-                                                print(IA.filterUpper)
-                                        if (event.key == pygame.K_u):
-                                                IA.filterUpper[0] = IA.filterUpper[0] - 5
-                                                print(IA.filterUpper)
-                                        if (event.key == pygame.K_j):
-                                                IA.filterLower[0] = IA.filterLower[0] + 5
-                                                print(IA.filterLower)
-                                        if (event.key == pygame.K_m):
-                                                IA.filterLower[0] = IA.filterLower[0] - 5
-                                                print(IA.filterLower)
-
-                                        if (event.key == pygame.K_8):
-                                                IA.filterUpper[1] = IA.filterUpper[1] + 5
-                                                print(IA.filterUpper)
-                                        if (event.key == pygame.K_i):
-                                                IA.filterUpper[1] = IA.filterUpper[1] - 5
-                                                print(IA.filterUpper)
-                                        if (event.key == pygame.K_k):
-                                                IA.filterLower[1] = IA.filterLower[1] + 5
-                                                print(IA.filterLower)
-                                        if (event.key == pygame.K_COMMA):
-                                                IA.filterLower[1] = IA.filterLower[1] - 5
-                                                print(IA.filterLower)
-
-                                        if (event.key == pygame.K_9):
-                                                IA.filterUpper[2] = IA.filterUpper[2] + 5
-                                                print(IA.filterUpper)
-                                        if (event.key == pygame.K_o):
-                                                IA.filterUpper[2] = IA.filterUpper[2] - 5
-                                                print(IA.filterUpper)
-                                        if (event.key == pygame.K_l):
-                                                IA.filterLower[2] = IA.filterLower[2] + 5
-                                                print(IA.filterLower)
-                                        if (event.key == pygame.K_PERIOD):
-                                                IA.filterLower[2] = IA.filterLower[2] - 5
-                                                print(IA.filterLower)
-                                                
+                                                m1.run(Adafruit_MotorHAT.BACKWARD)
+                                                m1.setSpeed(60)
                                 if event.type == pygame.KEYUP:
                                         if event.key == (pygame.K_UP):
-                                                robot.driveSync(0)
+                                                m2.run(Adafruit_MotorHAT.RELEASE)
                                         if event.key == (pygame.K_DOWN):
-                                                robot.driveSync(0)
+                                                m2.run(Adafruit_MotorHAT.RELEASE)
                                         if (event.key == pygame.K_LEFT):
-                                                robot.rotateSync(0)
+                                                m1.run(Adafruit_MotorHAT.RELEASE)
                                         if (event.key == pygame.K_RIGHT):
-                                                robot.rotateSync(0)
-
-                        
-                        # Autonomous
-                        if auto == True:
-                                
-                                # Analyze line
-                                aRes = IA.blockAnalyze(mask)
-                                print(aRes)                        
-                                dir = aRes[0]
-                                count = aRes[1]
-                
-                                # Drive         
-                                if abs(dir) > 0.20:
-                                        rotateSpeed = 50
-                                        if abs(dir) > 0.5:
-                                                rotateSpeed = 80
-                                        if abs(dir) > 0.75:
-                                                rotateSpeed = 90
-                                        if dir > 0:
-                                                print("Rotate -1")
-                                                robot.rotateSync(-1, rotateSpeed)
-                                                sleep(0.05)
-                                                robot.rotateSync(0)
-                                        else:
-                                                print("Rotate 1")
-                                                robot.rotateSync(1, rotateSpeed)
-                                                sleep(0.05)
-                                                robot.rotateSync(0)
-                                
-                                if dir > -999:
-                                        relCount = (1 - abs(dir)) * count
-                                        if count > 800:
-                                                driveSpeed = 50
-                                        if count > 8000:
-                                                driveSpeed = int(relCount / 8000 * 50)
-                                                print(driveSpeed)
-                                        if driveSpeed > 45 :                                        
-                                                robot.driveSync(1, driveSpeed)
-                                        else:
-                                                robot.driveSync(0)
-                                else:
-                                        robot.driveSync(0)
-                                        
+                                                m1.run(Adafruit_MotorHAT.RELEASE)
+                                                
                         # Handle stream
                         stream.seek(0)
                         stream.truncate()
